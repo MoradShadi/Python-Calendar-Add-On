@@ -71,6 +71,22 @@ def get_upcoming_events(api, starting_time, number_of_events):
     # Add your methods here.
 
 
+def get_year_future_events(api, starting_time, number_of_years):
+    """
+    Given a fixed number of years, prints the start and name of upcoming (future)
+    events that are scheduled on the user's calendar from today to the next specified
+    year.
+    """
+    new_max = (datetime.datetime.utcnow() + datetime.timedelta(days=365*number_of_years)).isoformat() + 'Z'
+    if number_of_years <= 0:
+        raise ValueError("Number of years must be at least 1.")
+
+    events_result = api.events().list(calendarId='primary', timeMin=starting_time,
+                                      timeMax=new_max, singleEvents=True,
+                                      orderBy='startTime').execute()
+    return events_result.get('items', [])
+
+
 def get_year_past_events(api, starting_time, number_of_years):
     """
     Given a fixed number of years, prints the start and name of past events
@@ -93,6 +109,7 @@ def main():
 
     events = get_upcoming_events(api, time_now, 10)
     # events = get_year_past_events(api, time_now, 5)
+    # events = get_year_future_events(api, time_now, 2)
 
     if not events:
         print('No upcoming events found.')
