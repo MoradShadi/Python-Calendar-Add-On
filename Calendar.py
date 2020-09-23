@@ -65,12 +65,13 @@ def get_upcoming_events(api, starting_time, number_of_events):
     events_result = api.events().list(calendarId='primary', timeMin=starting_time,
                                       maxResults=number_of_events, singleEvents=True,
                                       orderBy='startTime').execute()
+
     return events_result.get('items', [])
     
     # Add your methods here.
 
 
-def get_past_events(api, starting_time, number_of_years):
+def get_year_past_events(api, starting_time, number_of_years):
     """
     Given a fixed number of years, prints the start and name of past events
     that have occurred on the user's calendar during the specified past years up
@@ -91,7 +92,7 @@ def main():
     time_now = datetime.datetime.utcnow().isoformat() + 'Z'  # 'Z' indicates UTC time
 
     events = get_upcoming_events(api, time_now, 10)
-    # events = get_past_events(api, time_now, 5)
+    # events = get_year_past_events(api, time_now, 5)
 
     if not events:
         print('No upcoming events found.')
