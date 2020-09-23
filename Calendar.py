@@ -103,8 +103,15 @@ def get_year_past_events(api, starting_time, number_of_years):
     return events_result.get('items', [])
 
 
-def delete_event(api, calendar_id, event_id):
-    api.events().delete(calendarId=calendar_id, eventId=event_id).execute()
+def search_event(api, keyword):
+    events_result = api.events().list(calendarId='primary', q=keyword,
+                                      singleEvents=True,
+                                      orderBy='startTime').execute()
+    return events_result.get('items', [])
+
+
+def delete_event(api, event_id):
+    api.events().delete(calendarId='primary', eventId=event_id).execute()
     return True
 
 
@@ -115,6 +122,7 @@ def main():
     events = get_upcoming_events(api, time_now, 10)
     # events = get_year_past_events(api, time_now, 5)
     # events = get_year_future_events(api, time_now, 2)
+    # events = search_event(api, 'SanityCheck')
 
     if not events:
         print('No upcoming events found.')
