@@ -104,6 +104,10 @@ def get_year_past_events(api, starting_time, number_of_years):
 
 
 def search_event(api, keyword):
+    """
+    Searches through the user's calendar for events that contain the specified
+    keyword and returns them.
+    """
     events_result = api.events().list(calendarId='primary', q=keyword,
                                       singleEvents=True,
                                       orderBy='startTime').execute()
@@ -111,6 +115,9 @@ def search_event(api, keyword):
 
 
 def delete_event(api, event_id):
+    """
+    Deletes events in the user's calendar based on the given ID.
+    """
     api.events().delete(calendarId='primary', eventId=event_id).execute()
     return True
 
