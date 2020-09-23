@@ -23,7 +23,7 @@ from google_auth_oauthlib.flow import InstalledAppFlow
 from google.auth.transport.requests import Request
 
 # If modifying these scopes, delete the file token.pickle.
-SCOPES = ['https://www.googleapis.com/auth/calendar.readonly']
+SCOPES = ['https://www.googleapis.com/auth/calendar']
 
 
 def get_calendar_api():
@@ -101,6 +101,11 @@ def get_year_past_events(api, starting_time, number_of_years):
                                       timeMax=starting_time, singleEvents=True,
                                       orderBy='startTime').execute()
     return events_result.get('items', [])
+
+
+def delete_event(api, calendar_id, event_id):
+    api.events().delete(calendarId=calendar_id, eventId=event_id).execute()
+    return True
 
 
 def main():
