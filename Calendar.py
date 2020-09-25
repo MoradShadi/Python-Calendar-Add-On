@@ -107,17 +107,28 @@ def get_year_future_events(api, starting_time, number_of_years):
 
 
 def get_specific_time_events(api, year, month=0, day=0):
+    """
+    (Written for functionality 3)
+    Given a year, month, and day, prints the start and name of the events
+    that occur on that date. The month and day inputs are optional, meaning that
+    if a day input is not provided, all events that occur in the specific year's
+    month will be printed. Likewise, if the day and month inputs are both not provided,
+    all events that occur in the specific year will be printed.
+    """
     if year <= 0:
         raise ValueError("Invalid year input.")
 
+    # If month and day are not provided, print all events in the year
     if month == 0 and day == 0:
         start_time = (datetime.datetime.utcnow().replace(year=year, month=1, day=1, hour=0, minute=0, second=0,
                                                          microsecond=0))
         end_time = (start_time + relativedelta(years=+1))
+    # If only day is not provided, print all events in the year's month
     elif day == 0:
         start_time = (datetime.datetime.utcnow().replace(year=year, month=month, day=1, hour=0, minute=0, second=0,
                                                          microsecond=0))
         end_time = (start_time + relativedelta(months=+1))
+    # If all are given, print events in specific date
     else:
         start_time = (datetime.datetime.utcnow().replace(year=year, month=month, day=day, hour=0, minute=0, second=0,
                                                          microsecond=0))
@@ -172,7 +183,3 @@ def main():
 
 if __name__ == "__main__":  # Prevents the main() function from being called by the test suite runner
     main()
-
-# a = (datetime.datetime.utcnow().replace(month=1, day=1, hour=0, minute=0, second=0, microsecond=0))
-# b = (a + relativedelta(years=+1)).isoformat()
-# print(b)
