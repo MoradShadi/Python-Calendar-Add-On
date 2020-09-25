@@ -15,6 +15,7 @@
 
 # Code adapted from https://developers.google.com/calendar/quickstart/python
 from __future__ import print_function
+from dateutil.relativedelta import relativedelta
 import datetime
 import pickle
 import os.path
@@ -71,26 +72,11 @@ def get_upcoming_events(api, starting_time, number_of_events):
     # Add your methods here.
 
 
-def get_year_future_events(api, starting_time, number_of_years):
-    """
-    Given a fixed number of years, prints the start and name of upcoming (future)
-    events that are scheduled on the user's calendar from today to the next specified
-    year.
-    """
-    new_max = (datetime.datetime.utcnow() + datetime.timedelta(days=365*number_of_years)).isoformat() + 'Z'
-    if number_of_years <= 0:
-        raise ValueError("Number of years must be at least 1.")
-
-    events_result = api.events().list(calendarId='primary', timeMin=starting_time,
-                                      timeMax=new_max, singleEvents=True,
-                                      orderBy='startTime').execute()
-    return events_result.get('items', [])
-
-
 def get_year_past_events(api, starting_time, number_of_years):
     """
+    (Written for functionality 1)
     Given a fixed number of years, prints the start and name of past events
-    that have occurred on the user's calendar during the specified past years up
+    that have occurred on the user's calendar over the span of the past specified year(s) up
     till today.
     """
     new_min = (datetime.datetime.utcnow() - datetime.timedelta(days=365*number_of_years)).isoformat() + 'Z'
@@ -103,8 +89,52 @@ def get_year_past_events(api, starting_time, number_of_years):
     return events_result.get('items', [])
 
 
+def get_year_future_events(api, starting_time, number_of_years):
+    """
+    (Written for functionality 2)
+    Given a fixed number of years, prints the start and name of upcoming
+    events that are scheduled on the user's calendar from today over the span of the
+    next specified year(s).
+    """
+    new_max = (datetime.datetime.utcnow() + datetime.timedelta(days=365*number_of_years)).isoformat() + 'Z'
+    if number_of_years <= 0:
+        raise ValueError("Number of years must be at least 1.")
+
+    events_result = api.events().list(calendarId='primary', timeMin=starting_time,
+                                      timeMax=new_max, singleEvents=True,
+                                      orderBy='startTime').execute()
+    return events_result.get('items', [])
+
+
+def get_specific_time_events(api, year, month=0, day=0):
+    if year <= 0:
+        raise ValueError("Invalid year input.")
+
+    if month == 0 and day == 0:
+        start_time = (datetime.datetime.utcnow().replace(year=year, month=1, day=1, hour=0, minute=0, second=0,
+                                                         microsecond=0))
+        end_time = (start_time + relativedelta(years=+1))
+    elif day == 0:
+        start_time = (datetime.datetime.utcnow().replace(year=year, month=month, day=1, hour=0, minute=0, second=0,
+                                                         microsecond=0))
+        end_time = (start_time + relativedelta(months=+1))
+    else:
+        start_time = (datetime.datetime.utcnow().replace(year=year, month=month, day=day, hour=0, minute=0, second=0,
+                                                         microsecond=0))
+        end_time = (start_time + relativedelta(days=+1))
+
+    start_time = start_time.isoformat() + "Z"
+    end_time = end_time.isoformat() + "Z"
+
+    events_result = api.events().list(calendarId='primary', timeMin=start_time,
+                                      timeMax=end_time, singleEvents=True,
+                                      orderBy='startTime').execute()
+    return events_result.get('items', [])
+
+
 def search_event(api, keyword):
     """
+    (Written for functionality 5)
     Searches through the user's calendar for events that contain the specified
     keyword and returns them.
     """
@@ -116,6 +146,7 @@ def search_event(api, keyword):
 
 def delete_event(api, event_id):
     """
+    (Written for functionality 6)
     Deletes events in the user's calendar based on the given ID.
     """
     api.events().delete(calendarId='primary', eventId=event_id).execute()
@@ -126,13 +157,14 @@ def main():
     api = get_calendar_api()
     time_now = datetime.datetime.utcnow().isoformat() + 'Z'  # 'Z' indicates UTC time
 
-    events = get_upcoming_events(api, time_now, 10)
+    # events = get_upcoming_events(api, time_now, 10)
     # events = get_year_past_events(api, time_now, 5)
     # events = get_year_future_events(api, time_now, 2)
+    events = get_specific_time_events(api, 2020, 8, 17)
     # events = search_event(api, 'SanityCheck')
 
     if not events:
-        print('No upcoming events found.')
+        print('No events found.')
     for event in events:
         start = event['start'].get('dateTime', event['start'].get('date'))
         print(start, event['summary'])
@@ -140,3 +172,7 @@ def main():
 
 if __name__ == "__main__":  # Prevents the main() function from being called by the test suite runner
     main()
+
+# a = (datetime.datetime.utcnow().replace(month=1, day=1, hour=0, minute=0, second=0, microsecond=0))
+# b = (a + relativedelta(years=+1)).isoformat()
+# print(b)
