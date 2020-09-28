@@ -68,7 +68,7 @@ def get_upcoming_events(api, starting_time, number_of_events):
                                       orderBy='startTime').execute()
 
     return events_result.get('items', [])
-    
+
     # Add your methods here.
 
 
@@ -79,7 +79,10 @@ def get_year_past_events(api, starting_time, number_of_years):
     that have occurred on the user's calendar over the span of the past specified year(s) up
     till today.
     """
-    new_min = (datetime.datetime.utcnow() - datetime.timedelta(days=365*number_of_years)).isoformat() + 'Z'
+
+    new_min = (datetime.datetime.fromisoformat(starting_time[:-1]) -
+               relativedelta(years=+number_of_years)).isoformat() + 'Z'
+
     if number_of_years <= 0:
         raise ValueError("Number of years must be at least 1.")
 
@@ -96,7 +99,9 @@ def get_year_future_events(api, starting_time, number_of_years):
     events that are scheduled on the user's calendar from today over the span of the
     next specified year(s).
     """
-    new_max = (datetime.datetime.utcnow() + datetime.timedelta(days=365*number_of_years)).isoformat() + 'Z'
+    new_max = (datetime.datetime.fromisoformat(starting_time[:-1]) +
+               relativedelta(years=+number_of_years)).isoformat() + 'Z'
+
     if number_of_years <= 0:
         raise ValueError("Number of years must be at least 1.")
 
@@ -145,7 +150,7 @@ def get_specific_time_events(api, year, month=0, day=0):
 
 def search_event(api, keyword):
     """
-    (Written for functionality 5)
+    (Written for functionality 4)
     Searches through the user's calendar for events that contain the specified
     keyword and returns them.
     """
@@ -157,7 +162,7 @@ def search_event(api, keyword):
 
 def delete_event(api, event_id):
     """
-    (Written for functionality 6)
+    (Written for functionality 5)
     Deletes events in the user's calendar based on the given ID.
     """
     api.events().delete(calendarId='primary', eventId=event_id).execute()
@@ -170,8 +175,8 @@ def main():
 
     # events = get_upcoming_events(api, time_now, 10)
     # events = get_year_past_events(api, time_now, 5)
-    # events = get_year_future_events(api, time_now, 2)
-    events = get_specific_time_events(api, 2020, 8, 17)
+    events = get_year_future_events(api, time_now, 2)
+    # events = get_specific_time_events(api, 2020, 8, 17)
     # events = search_event(api, 'SanityCheck')
 
     if not events:
