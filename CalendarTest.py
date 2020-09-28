@@ -55,6 +55,16 @@ class CalendarTest(unittest.TestCase):
         with self.assertRaises(ValueError):
             Calendar.get_year_past_events(mock_api, start_time, -1)
 
+    def test_get_specific_time_events(self):
+        #tests if an exeption is raised when year entered is less than 1
+        mock_api = Mock()
+        with self.assertRaises(ValueError):
+            Calendar.get_specific_time_events(mock_api,0)
+
+        mock_api = Mock()
+        with self.assertRaises(ValueError):
+            Calendar.get_specific_time_events(mock_api,-1)
+
 def main():
     # Create the test suite from the cases above.
     suite = unittest.TestLoader().loadTestsFromTestCase(CalendarTest)
