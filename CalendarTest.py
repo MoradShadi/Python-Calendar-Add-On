@@ -33,7 +33,7 @@ class CalendarTest(unittest.TestCase):
 
 
     # Add more test cases here
-    def test_get_specific_past_years_events(self):
+    def test_get_past_years_events(self):
         start_time = "2020-09-28T00:00:00.000000Z"
         num_years = 2
 
