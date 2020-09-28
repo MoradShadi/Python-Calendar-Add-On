@@ -1,6 +1,8 @@
 import unittest
 from unittest.mock import Mock
 import Calendar
+import datetime
+from dateutil.relativedelta import relativedelta
 # Add other imports here if needed
 
 
@@ -64,6 +66,13 @@ class CalendarTest(unittest.TestCase):
         mock_api = Mock()
         with self.assertRaises(ValueError):
             Calendar.get_specific_time_events(mock_api,-1)
+
+    def test_search_event(self):
+        api = Calendar.get_calendar_api()
+    
+        self.assertEqual(Calendar.search_event(api,'vnjfnvjfenvjefnvienbfivbefbvhejbf'),api.events().list(calendarId='primary', q='vnjfnvjfenvjefnvienbfivbefbvhejbf').execute().get('items',[]))
+        self.assertEqual(Calendar.search_event(api,'test'),api.events().list(calendarId='primary', q='test').execute().get('items',[]))
+        self.assertEqual(Calendar.search_event(api,'123456789'),api.events().list(calendarId='primary', q='123456789').execute().get('items',[]))
 
 def main():
     # Create the test suite from the cases above.
