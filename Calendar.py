@@ -173,11 +173,11 @@ def main():
     api = get_calendar_api()
     time_now = datetime.datetime.utcnow().isoformat() + 'Z'  # 'Z' indicates UTC time
 
-    # events = get_upcoming_events(api, time_now, 10)
-    # events = get_year_past_events(api, time_now, 5)
+    #events = get_upcoming_events(api, time_now, 10)
+    #events = get_year_past_events(api, time_now, 5)
     events = get_year_future_events(api, time_now, 2)
-    # events = get_specific_time_events(api, 2020, 8, 17)
-    # events = search_event(api, 'SanityCheck')
+    #events = get_specific_time_events(api, 2020, 8, 17)
+    #events = search_event(api, 'SanityCheck')
 
     if not events:
         print('No events found.')
