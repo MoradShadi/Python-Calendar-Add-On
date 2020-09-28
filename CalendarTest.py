@@ -22,6 +22,16 @@ class CalendarTest(unittest.TestCase):
     
         self.assertEqual(kwargs['maxResults'], num_events) #asserts that the number of events specified is equal to the one found at the query.
 
+        #tests if an exeption is raised when the number of events entered is less than 1
+        mock_api = Mock()
+        with self.assertRaises(ValueError):
+            Calendar.get_upcoming_events(mock_api, time, 0)
+            
+        mock_api = Mock()
+        with self.assertRaises(ValueError):
+            Calendar.get_upcoming_events(mock_api, time, -1)
+
+
     # Add more test cases here
     def test_get_specific_past_years_events(self):
         start_time = "2020-09-28T00:00:00.000000Z"
