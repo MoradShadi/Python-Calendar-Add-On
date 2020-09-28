@@ -20,6 +20,16 @@ class CalendarTest(unittest.TestCase):
         self.assertEqual(kwargs['maxResults'], num_events)
 
     # Add more test cases here
+    def test_get_specific_past_years_events(self):
+        start_time = "2020-09-28T00:00:00.000000Z"
+        num_years = 2
+
+        mock_api = Mock()
+        events = Calendar.get_year_past_events(mock_api, start_time, num_years)
+        args, kwargs = mock_api.events.return_value.list.call_args_list[0]
+
+        # Tests that we are querying for events from at least 2 years ago
+        self.assertEqual(int(kwargs['timeMax'][:4]) - int(kwargs['timeMin'][:4]), num_years)
 
 
 def main():
