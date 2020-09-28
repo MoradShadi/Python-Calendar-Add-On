@@ -46,6 +46,14 @@ class CalendarTest(unittest.TestCase):
         # Tests that we are querying for events from at least 2 years ago
         self.assertEqual(int(kwargs['timeMax'][:4]) - int(kwargs['timeMin'][:4]), num_years)
 
+        #tests if an exeption is raised when the number of events entered is less than 1
+        mock_api = Mock()
+        with self.assertRaises(ValueError):
+            Calendar.get_year_past_events(mock_api, start_time, 0)
+            
+        mock_api = Mock()
+        with self.assertRaises(ValueError):
+            Calendar.get_year_past_events(mock_api, start_time, -1)
 
 def main():
     # Create the test suite from the cases above.
