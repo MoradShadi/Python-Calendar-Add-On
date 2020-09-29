@@ -176,6 +176,10 @@ def delete_event(api, event_id):
 
 
 def delete_event_by_name(api, event_name):
+    """
+    (Written for functionality 5)
+    Deletes events in the user's calendar based on the given name.
+    """
     res = search_event(api, event_name)
 
     for item in res:
