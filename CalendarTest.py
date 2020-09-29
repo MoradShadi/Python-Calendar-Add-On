@@ -106,6 +106,10 @@ class CalendarTest(unittest.TestCase):
 
     def test_delete_event_by_name(self):
         api = Calendar.get_calendar_api()
+        
+        with self.assertRaises(ProcessLookupError):
+            Calendar.delete_event_by_name(api,'__test1__')
+            
         body = {'summary': '__test1__','start': {'dateTime': '2020-10-28T09:00:00-07:00'}, 'end': {'dateTime': '2020-10-28T17:00:00-07:00'}}
         api.events().insert(calendarId='primary',body = body).execute()
         self.assertEqual(Calendar.delete_event_by_name(api,'__test1__'),None)
