@@ -5,7 +5,7 @@ import Calendar
 # Add other imports here if needed
 import datetime
 from dateutil.relativedelta import relativedelta
-
+from googleapiclient.errors import HttpError
 
 class CalendarTest(unittest.TestCase):
     # This test tests number of upcoming events.
@@ -104,6 +104,14 @@ class CalendarTest(unittest.TestCase):
         self.assertEqual(Calendar.search_event(api, '123456789'), api.events().list(calendarId='primary', q='123456789').execute().get('items', []))
 
 
+    def test_delete_event_by_name(self):
+        api = Calendar.get_calendar_api()
+        body = {'summary': '__test1__','start': {'dateTime': '2020-10-28T09:00:00-07:00'}, 'end': {'dateTime': '2020-10-28T17:00:00-07:00'}}
+        api.events().insert(calendarId='primary',body = body).execute()
+        self.assertEqual(Calendar.delete_event_by_name(api,'__test1__'),None)
+
+        
+        
 def main():
     # Create the test suite from the cases above.
     suite = unittest.TestLoader().loadTestsFromTestCase(CalendarTest)
