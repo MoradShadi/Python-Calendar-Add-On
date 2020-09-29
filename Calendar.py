@@ -180,11 +180,13 @@ def delete_event_by_name(api, event_name):
     (Written for functionality 5)
     Deletes events in the user's calendar based on the given name.
     """
+    found = False
     res = search_event(api, event_name)
-
     for item in res:
+        found = True
         delete_event(api, item['id'])
-
+    if found == False:
+        raise ProcessLookupError("No events with that name")
 
 def main():
     api = get_calendar_api()
@@ -193,16 +195,17 @@ def main():
     # events = get_upcoming_events(api, time_now, 10)
     # events = get_year_past_events(api, time_now, 5)
     events = get_year_future_events(api, time_now, 2)
-    # events = get_specific_time_events(api, 2020, 8, 17)
-    # events = search_event(api, 'SanityCheck')
-
+    #events = get_specific_time_events(api, 2020, 8, 17)
+    #events = search_event(api, 'SanityCheck')
+    #delete_event(api,'test1')
+    
     if not events:
         print('No events found.')
     for event in events:
         start = event['start'].get('dateTime', event['start'].get('date'))
         print(start, event['summary'])
 
-    delete_event_by_name(api, "test")
+    delete_event_by_name(api, "test1")
 
 
 if __name__ == "__main__":  # Prevents the main() function from being called by the test suite runner
