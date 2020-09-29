@@ -15,6 +15,7 @@
 
 # Code adapted from https://developers.google.com/calendar/quickstart/python
 from __future__ import print_function
+
 from dateutil.relativedelta import relativedelta
 import datetime
 import pickle
@@ -22,6 +23,7 @@ import os.path
 from googleapiclient.discovery import build
 from google_auth_oauthlib.flow import InstalledAppFlow
 from google.auth.transport.requests import Request
+from googleapiclient.errors import HttpError
 
 # If modifying these scopes, delete the file token.pickle.
 SCOPES = ['https://www.googleapis.com/auth/calendar']
@@ -165,25 +167,31 @@ def delete_event(api, event_id):
     (Written for functionality 5)
     Deletes events in the user's calendar based on the given ID.
     """
-    api.events().delete(calendarId='primary', eventId=event_id).execute()
-    return True
+    try:
+        api.events().delete(calendarId='primary', eventId=event_id).execute()
+    except HttpError as e:
+        raise e
+    else:
+        return True
 
 
 def main():
     api = get_calendar_api()
     time_now = datetime.datetime.utcnow().isoformat() + 'Z'  # 'Z' indicates UTC time
 
-    #events = get_upcoming_events(api, time_now, 10)
-    #events = get_year_past_events(api, time_now, 5)
+    # events = get_upcoming_events(api, time_now, 10)
+    # events = get_year_past_events(api, time_now, 5)
     events = get_year_future_events(api, time_now, 2)
-    #events = get_specific_time_events(api, 2020, 8, 17)
-    #events = search_event(api, 'SanityCheck')
+    # events = get_specific_time_events(api, 2020, 8, 17)
+    # events = search_event(api, 'SanityCheck')
 
     if not events:
         print('No events found.')
     for event in events:
         start = event['start'].get('dateTime', event['start'].get('date'))
         print(start, event['summary'])
+
+    # delete_event(api, "123")
 
 
 if __name__ == "__main__":  # Prevents the main() function from being called by the test suite runner
