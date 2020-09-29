@@ -175,6 +175,13 @@ def delete_event(api, event_id):
         return True
 
 
+def delete_event_by_name(api, event_name):
+    res = search_event(api, event_name)
+
+    for item in res:
+        delete_event(api, item['id'])
+
+
 def main():
     api = get_calendar_api()
     time_now = datetime.datetime.utcnow().isoformat() + 'Z'  # 'Z' indicates UTC time
@@ -191,7 +198,7 @@ def main():
         start = event['start'].get('dateTime', event['start'].get('date'))
         print(start, event['summary'])
 
-    # delete_event(api, "123")
+    delete_event_by_name(api, "test")
 
 
 if __name__ == "__main__":  # Prevents the main() function from being called by the test suite runner
