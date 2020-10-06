@@ -191,7 +191,7 @@ def delete_event_by_name(api, event_name):
 def main():
     api = get_calendar_api()
     time_now = datetime.datetime.utcnow().isoformat() + 'Z'  # 'Z' indicates UTC time
-
+    
     # events = get_upcoming_events(api, time_now, 10)
     # events = get_year_past_events(api, time_now, 5)
     events = get_year_future_events(api, time_now, 2)
@@ -202,10 +202,19 @@ def main():
     if not events:
         print('No events found.')
     for event in events:
+        Reminders = ""
         start = event['start'].get('dateTime', event['start'].get('date'))
-        print(start, event['summary'])
-
-    delete_event_by_name(api, "test1")
+        if event['reminders'].get('useDefault') == True:
+            Reminders += "{Time: 10 minutes before, Method: pop-up}"
+        else:
+            for reminder in event['reminders'].get('overrides'):
+                Reminders += "{Time: "
+                Reminders += str(reminder['minutes'])
+                Reminders += " minutes before, Method: "
+                Reminders += str(reminder['method'])
+                Reminders += "}"
+        print(start, event['summary'], "| Reminders -> ", Reminders)
+    #delete_event_by_name(api, "test1")
 
 
 if __name__ == "__main__":  # Prevents the main() function from being called by the test suite runner
