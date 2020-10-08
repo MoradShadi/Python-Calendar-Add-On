@@ -7,6 +7,7 @@ import datetime
 from dateutil.relativedelta import relativedelta
 from googleapiclient.errors import HttpError
 
+
 class CalendarTest(unittest.TestCase):
     # This test tests number of upcoming events.
     def test_get_upcoming_events_number(self):
@@ -38,7 +39,7 @@ class CalendarTest(unittest.TestCase):
             Calendar.get_upcoming_events(mock_api, time, -1)
 
     # Add more test cases here
-    def test_get_past_years_events(self):
+    def test_get_past_years_events_mock(self):
         start_time = datetime.datetime.utcnow().isoformat() + 'Z'
         num_years = 5
 
@@ -60,6 +61,19 @@ class CalendarTest(unittest.TestCase):
         mock_api = Mock()
         with self.assertRaises(ValueError):
             Calendar.get_year_past_events(mock_api, start_time, -1)
+
+    def test_get_past_year_events(self):
+        start_time = datetime.datetime.utcnow().isoformat() + 'Z'
+        num_years = 6
+        api = Calendar.get_calendar_api()
+
+        body = {'summary': '__testing__', 'start': {'dateTime': (datetime.datetime.utcnow() - relativedelta(years=+5)).isoformat() + "Z"},
+                'end': {'dateTime': (datetime.datetime.utcnow() - relativedelta(years=+5) + relativedelta(hours=+1)).isoformat() + "Z"}}
+        # Inserts an event to the calendar so it can be deleted later on to test if function carries out correctly
+        api.events().insert(calendarId='primary', body=body).execute()
+
+        self.assertGreater(len(Calendar.get_year_past_events(api, start_time, num_years)), 0)
+        Calendar.delete_event_by_name(api, '__testing__')
 
     def test_get_future_years_events(self):
         start_time = datetime.datetime.utcnow().isoformat() + 'Z'
@@ -103,21 +117,21 @@ class CalendarTest(unittest.TestCase):
         self.assertEqual(Calendar.search_event(api, 'test'), api.events().list(calendarId='primary', q='test').execute().get('items', []))
         self.assertEqual(Calendar.search_event(api, '123456789'), api.events().list(calendarId='primary', q='123456789').execute().get('items', []))
 
-
     def test_delete_event_by_name(self):
         api = Calendar.get_calendar_api()
         # tests if exception is correctly raised when trying to delete event that doesnt exist
         with self.assertRaises(ProcessLookupError):
-            Calendar.delete_event_by_name(api,'__test1__')
+            Calendar.delete_event_by_name(api, '__test1__')
+
         # prepares information for test event to be added to calendar   
-        body = {'summary': '__test1__','start': {'dateTime': '2020-10-28T09:00:00-07:00'}, 'end': {'dateTime': '2020-10-28T17:00:00-07:00'}}
+        body = {'summary': '__test1__', 'start': {'dateTime': '2020-10-28T09:00:00-07:00'}, 'end': {'dateTime': '2020-10-28T17:00:00-07:00'}}
         # Inserts an event to the calendar so it can be deleted later on to test if function carries out correctly
-        api.events().insert(calendarId='primary',body = body).execute()
+        api.events().insert(calendarId='primary', body=body).execute()
         # tests that the event is deleted successfully with no issues
-        self.assertEqual(Calendar.delete_event_by_name(api,'__test1__'),None)
+        self.assertEqual(Calendar.delete_event_by_name(api, '__test1__'), None)
         # test again to make sure that an error is raised after the event has been deleted
         with self.assertRaises(ProcessLookupError):
-            Calendar.delete_event_by_name(api,'__test1__')
+            Calendar.delete_event_by_name(api, '__test1__')
         
         
 def main():
