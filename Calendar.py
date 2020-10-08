@@ -150,6 +150,60 @@ def get_specific_time_events(api, year, month=0, day=0):
     return events_result.get('items', [])
 
 
+def navigate_calendar(api):
+
+    events = None
+    while True:
+        try:
+            print("------------------------------------\n"
+                  "Welcome to the calendar, please choose a date format to view events.\n"
+                  "1. Year \n"
+                  "2. Year + Month \n"
+                  "3. Year + Month + Date \n"
+                  "4. Exit\n"
+                  "------------------------------------")
+            user_input = int(input("Enter option: "))
+
+            if user_input == 1:
+                year_input = int(input("Please input year: "))
+                events = get_specific_time_events(api, year_input)
+
+            elif user_input == 2:
+                year_input = int(input("Please input year: "))
+                month_input = int(input("Please input month: "))
+                events = get_specific_time_events(api, year_input, month_input)
+
+            elif user_input == 3:
+                year_input = int(input("Please input year: "))
+                month_input = int(input("Please input month: "))
+                day_input = int(input("Please input day: "))
+                events = get_specific_time_events(api, year_input, month_input, day_input)
+
+            elif user_input == 4:
+                break
+
+            print("\nResults: \n")
+            if not events:
+                print('No events found.')
+            for event in events:
+                Reminders = ""
+                start = event['start'].get('dateTime', event['start'].get('date'))
+                if event['reminders'].get('useDefault'):
+                    Reminders += "{Time: 10 minutes before, Method: pop-up}"
+                else:
+                    for reminder in event['reminders'].get('overrides'):
+                        Reminders += "{Time: "
+                        Reminders += str(reminder['minutes'])
+                        Reminders += " minutes before, Method: "
+                        Reminders += str(reminder['method'])
+                        Reminders += "}"
+                print(start, event['summary'], "| Reminders -> ", Reminders)
+            print("\n")
+
+        except ValueError:
+            print("Invalid input. Please try again.")
+
+
 def search_event(api, keyword):
     """
     (Written for functionality 4)
@@ -185,26 +239,28 @@ def delete_event_by_name(api, event_name):
     for item in res:
         found = True
         delete_event(api, item['id'])
-    if found == False:
+    if not found:
         raise ProcessLookupError("No events with that name")
+
 
 def main():
     api = get_calendar_api()
+    # navigate_calendar(api)
     time_now = datetime.datetime.utcnow().isoformat() + 'Z'  # 'Z' indicates UTC time
     
     # events = get_upcoming_events(api, time_now, 10)
     # events = get_year_past_events(api, time_now, 5)
     events = get_year_future_events(api, time_now, 2)
-    #events = get_specific_time_events(api, 2020, 8, 17)
-    #events = search_event(api, 'SanityCheck')
-    #delete_event(api,'test1')
-    
+    # events = get_specific_time_events(api, 2020, 8, 17)
+    # events = search_event(api, 'SanityCheck')
+    # delete_event(api,'test1')
+
     if not events:
         print('No events found.')
     for event in events:
         Reminders = ""
         start = event['start'].get('dateTime', event['start'].get('date'))
-        if event['reminders'].get('useDefault') == True:
+        if event['reminders'].get('useDefault'):
             Reminders += "{Time: 10 minutes before, Method: pop-up}"
         else:
             for reminder in event['reminders'].get('overrides'):
@@ -214,7 +270,7 @@ def main():
                 Reminders += str(reminder['method'])
                 Reminders += "}"
         print(start, event['summary'], "| Reminders -> ", Reminders)
-    #delete_event_by_name(api, "test1")
+    # delete_event_by_name(api, "test1")
 
 
 if __name__ == "__main__":  # Prevents the main() function from being called by the test suite runner
