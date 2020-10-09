@@ -85,8 +85,8 @@ def get_year_past_events(api, starting_time, number_of_years):
     new_min = (datetime.datetime.fromisoformat(starting_time[:-1]) -
                relativedelta(years=+number_of_years)).isoformat() + 'Z'
 
-    if number_of_years <= 0:
-        raise ValueError("Number of years must be at least 1.")
+    if number_of_years <= 4:
+        raise ValueError("Number of years must be at least 5.")
 
     events_result = api.events().list(calendarId='primary', timeMin=new_min,
                                       timeMax=starting_time, singleEvents=True,
@@ -104,8 +104,8 @@ def get_year_future_events(api, starting_time, number_of_years):
     new_max = (datetime.datetime.fromisoformat(starting_time[:-1]) +
                relativedelta(years=+number_of_years)).isoformat() + 'Z'
 
-    if number_of_years <= 0:
-        raise ValueError("Number of years must be at least 1.")
+    if number_of_years <= 1:
+        raise ValueError("Number of years must be at least 2.")
 
     events_result = api.events().list(calendarId='primary', timeMin=starting_time,
                                       timeMax=new_max, singleEvents=True,
