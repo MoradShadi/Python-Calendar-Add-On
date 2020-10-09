@@ -171,6 +171,9 @@ class CalendarTest(unittest.TestCase):
 
         # check that others days havent changed
         self.assertEqual(len(Calendar.get_specific_time_events(api,year,month,9)), check_day_events_before)
+
+        # removes the test event added
+        Calendar.delete_event_by_name(api, '__testing__')
         
         # tests if an exception is raised when year entered is 0 or less
         mock_api = Mock()
