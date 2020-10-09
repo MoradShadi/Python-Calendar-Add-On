@@ -67,14 +67,17 @@ class CalendarTest(unittest.TestCase):
         num_years = 6
         api = Calendar.get_calendar_api()
 
+        # Get the amount of events in the calendar before adding the new test event
         len_before_insert = len(Calendar.get_year_past_events(api, start_time, num_years))
 
+        # Inserts a test event that is num_years in the past
         body = {'summary': '__testing__', 'start': {'dateTime': (datetime.datetime.utcnow() - relativedelta(years=+num_years) + relativedelta(hours=+1)).isoformat() + "Z"},
                 'end': {'dateTime': (datetime.datetime.utcnow() - relativedelta(years=+num_years) + relativedelta(hours=+2)).isoformat() + "Z"}}
-        # Inserts an event to the calendar so it can be deleted later on to test if function carries out correctly
         api.events().insert(calendarId='primary', body=body).execute()
 
+        # Ensure that the inserted test event num_years in the past can be obtained
         self.assertEqual(len(Calendar.get_year_past_events(api, start_time, num_years)), len_before_insert+1)
+        # Deletes the created event
         Calendar.delete_event_by_name(api, '__testing__')
 
     def test_get_future_years_events_mock(self):
@@ -105,14 +108,17 @@ class CalendarTest(unittest.TestCase):
         num_years = 3
         api = Calendar.get_calendar_api()
 
+        # Get the amount of events in the calendar before adding the new test event
         len_before_insert = len(Calendar.get_year_future_events(api, start_time, num_years))
 
+        # Inserts a test event that is num_years in the future
         body = {'summary': '__testing__', 'start': {'dateTime': (datetime.datetime.utcnow() + relativedelta(years=+num_years) - relativedelta(hours=+2)).isoformat() + "Z"},
                 'end': {'dateTime': (datetime.datetime.utcnow() + relativedelta(years=+num_years) - relativedelta(hours=+1)).isoformat() + "Z"}}
-        # Inserts an event to the calendar so it can be deleted later on to test if function carries out correctly
         api.events().insert(calendarId='primary', body=body).execute()
 
+        # Ensure that the inserted test event num_years in the future can be obtained
         self.assertEqual(len(Calendar.get_year_future_events(api, start_time, num_years)), len_before_insert+1)
+        # Deletes the created event
         Calendar.delete_event_by_name(api, '__testing__')
 
     def test_get_specific_time_events(self):
