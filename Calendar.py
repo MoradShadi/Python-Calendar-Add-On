@@ -124,7 +124,10 @@ def get_specific_time_events(api, year, month=0, day=0):
     """
     if year <= 0:
         raise ValueError("Invalid year input.")
-
+    if month < 0 or month > 12:
+        raise ValueError("Invalid month input.")
+    if day < 0 or day > 31:
+        raise ValueError("Invalid day input.")    
     # If month and day are not provided, print all events in the year
     if month == 0 and day == 0:
         start_time = (datetime.datetime.utcnow().replace(year=year, month=1, day=1, hour=0, minute=0, second=0,
@@ -250,7 +253,7 @@ def main():
     
     # events = get_upcoming_events(api, time_now, 10)
     # events = get_year_past_events(api, time_now, 5)
-    events = get_year_future_events(api, time_now, 2)
+    #events = get_year_future_events(api, time_now, 2)
     # events = get_specific_time_events(api, 2020, 8, 17)
     # events = search_event(api, 'SanityCheck')
     # delete_event(api,'test1')

@@ -63,7 +63,7 @@ class CalendarTest(unittest.TestCase):
             Calendar.get_year_past_events(mock_api, start_time, -1)
 
     def test_get_past_year_events(self):
-        for iteration in range(2,7):
+        for iteration in range(3,7):
             start_time = datetime.datetime.utcnow().isoformat() + 'Z'
             num_years = iteration
             api = Calendar.get_calendar_api()
