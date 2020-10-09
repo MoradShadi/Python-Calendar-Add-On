@@ -138,43 +138,39 @@ class CalendarTest(unittest.TestCase):
         day = 15
 
         # gets the event in the whole year
-        start_time = (datetime.datetime.utcnow().replace(year=year, month=1, day=1, hour=0, minute=0, second=0,microsecond=0))
-        end_time = (start_time + relativedelta(years=+1))
-        start_time = start_time.isoformat() + "Z"
-        end_time = end_time.isoformat() + "Z"
-
-        events_result = api.events().list(calendarId='primary', timeMin=start_time,
-                                      timeMax=end_time, singleEvents=True,
-                                      orderBy='startTime').execute()
-        # assigns length of events array returned and compares with return from function
-        year_len_before = len(events_result.get('items', []))
-        self.assertEqual(len(Calendar.get_specific_time_events(api, year)),year_len_before)
+        year_events_before = len(Calendar.get_specific_time_events(api,year))
         
         # gets the events in given month
-        start_time = (datetime.datetime.utcnow().replace(year=year, month=month, day=1, hour=0, minute=0, second=0,microsecond=0))
-        end_time = (start_time + relativedelta(months=+1))
-        start_time = start_time.isoformat() + "Z"
-        end_time = end_time.isoformat() + "Z"
-
-        events_result = api.events().list(calendarId='primary', timeMin=start_time,
-                                      timeMax=end_time, singleEvents=True,
-                                      orderBy='startTime').execute()
-        # assigns length of events array returned and compares with return from function
-        month_len_before = len(events_result.get('items', []))
-        self.assertEqual(len(Calendar.get_specific_time_events(api,year,month)),month_len_before)
+        month_events_before = len(Calendar.get_specific_time_events(api,year,month))
 
         # gets the events in given day
-        start_time = (datetime.datetime.utcnow().replace(year=year, month=month, day=day, hour=0, minute=0, second=0,microsecond=0))
+        day_events_before = len(Calendar.get_specific_time_events(api, year,month,day))
+
+        # gets the events on different day for checking later
+        check_day_events_before = len(Calendar.get_specific_time_events(api, year,month,9))
+
+    
+        # Inserts a test event in same given day
+        start_time = (datetime.datetime.utcnow().replace(year=year, month=month, day=day, hour=0, minute=0, second=0,
+                                                         microsecond=0))
         end_time = (start_time + relativedelta(days=+1))
         start_time = start_time.isoformat() + "Z"
         end_time = end_time.isoformat() + "Z"
+        body = {'summary': '__testing__', 'start': {'dateTime': start_time},
+                'end': {'dateTime': end_time}}
+        api.events().insert(calendarId='primary', body=body).execute()
 
-        events_result = api.events().list(calendarId='primary', timeMin=start_time,
-                                      timeMax=end_time, singleEvents=True,
-                                      orderBy='startTime').execute()
-        # assigns length of events array returned and compares with return from function
-        days_len_before = len(events_result.get('items', []))
-        self.assertEqual(len(Calendar.get_specific_time_events(api, year,month,day)),days_len_before) 
+        # check updated number of events in year
+        self.assertEqual(len(Calendar.get_specific_time_events(api,year)), year_events_before + 1)
+
+        # check updated number of events in month
+        self.assertEqual(len(Calendar.get_specific_time_events(api,year,month)), month_events_before + 1)
+
+        # check updated number of events in day
+        self.assertEqual(len(Calendar.get_specific_time_events(api,year,month,day)), day_events_before + 1)
+
+        # check that others days havent changed
+        self.assertEqual(len(Calendar.get_specific_time_events(api,year,month,9)), check_day_events_before)
         
         # tests if an exception is raised when year entered is 0 or less
         mock_api = Mock()
