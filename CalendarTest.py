@@ -185,6 +185,29 @@ class CalendarTest(unittest.TestCase):
         with self.assertRaises(ValueError):
             Calendar.get_specific_time_events(mock_api, -1)
 
+        # tests exception for invalid month entry
+        mock_api = Mock()
+        with self.assertRaises(ValueError):
+            Calendar.get_specific_time_events(mock_api, 2020,-1)
+
+        mock_api = Mock()
+        with self.assertRaises(ValueError):
+            Calendar.get_specific_time_events(mock_api, 2020,15)
+
+        # tests exception for invalid day entry
+        mock_api = Mock()
+        with self.assertRaises(ValueError):
+            Calendar.get_specific_time_events(mock_api, 2020, 2, 30) # this one checks 30th day in Feb which doesnt exist, even in leap year
+
+        mock_api = Mock()
+        with self.assertRaises(ValueError):
+            Calendar.get_specific_time_events(mock_api, 2020, 11, 40)
+
+        mock_api = Mock()
+        with self.assertRaises(ValueError):
+            Calendar.get_specific_time_events(mock_api, 2020, 11, -2)
+
+
     def test_search_event(self):
         api = Calendar.get_calendar_api()
 
