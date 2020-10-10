@@ -215,6 +215,19 @@ class CalendarTest(unittest.TestCase):
         self.assertEqual(Calendar.search_event(api, 'test'), api.events().list(calendarId='primary', q='test').execute().get('items', []))
         self.assertEqual(Calendar.search_event(api, '123456789'), api.events().list(calendarId='primary', q='123456789').execute().get('items', []))
 
+        # Get the amount of events in the calendar when searching before adding the new test event
+        len_before_insert = len(Calendar.search_event(api, '__testing__'))
+
+        # Adds a new test event
+        body = {'summary': '__testing__', 'start': {'dateTime': datetime.datetime.utcnow().isoformat() + "Z"},
+                'end': {'dateTime': (datetime.datetime.utcnow() + relativedelta(hours=+2)).isoformat() + "Z"}}
+        api.events().insert(calendarId='primary', body=body).execute()
+
+        # Ensures that the inserted event can be obtained using the search function
+        self.assertEqual(len(Calendar.search_event(api, '__testing__')), len_before_insert+1)
+        # Deletes the created event
+        Calendar.delete_event_by_name(api, '__testing__')
+
     def test_delete_event_by_name(self):
         api = Calendar.get_calendar_api()
         # tests if exception is correctly raised when trying to delete event that doesnt exist
