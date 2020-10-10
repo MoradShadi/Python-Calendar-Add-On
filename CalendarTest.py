@@ -149,7 +149,6 @@ class CalendarTest(unittest.TestCase):
         # gets the events on different day for checking later
         check_day_events_before = len(Calendar.get_specific_time_events(api, year,month,9))
 
-    
         # Inserts a test event in same given day
         start_time = (datetime.datetime.utcnow().replace(year=year, month=month, day=day, hour=0, minute=0, second=0,
                                                          microsecond=0))
@@ -196,7 +195,8 @@ class CalendarTest(unittest.TestCase):
         # tests exception for invalid day entry
         mock_api = Mock()
         with self.assertRaises(ValueError):
-            Calendar.get_specific_time_events(mock_api, 2020, 2, 30) # this one checks 30th day in Feb which doesnt exist, even in leap year
+            # this one checks 30th day in Feb which doesnt exist, even in leap year
+            Calendar.get_specific_time_events(mock_api, 2020, 2, 30)
 
         mock_api = Mock()
         with self.assertRaises(ValueError):
@@ -205,7 +205,6 @@ class CalendarTest(unittest.TestCase):
         mock_api = Mock()
         with self.assertRaises(ValueError):
             Calendar.get_specific_time_events(mock_api, 2020, 11, -2)
-
 
     def test_search_event(self):
         api = Calendar.get_calendar_api()

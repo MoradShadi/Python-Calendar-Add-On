@@ -219,19 +219,6 @@ def search_event(api, keyword):
     return events_result.get('items', [])
 
 
-def delete_event(api, event_id):
-    """
-    (Written for functionality 5)
-    Deletes events in the user's calendar based on the given ID.
-    """
-    try:
-        api.events().delete(calendarId='primary', eventId=event_id).execute()
-    except HttpError as e:
-        raise e
-    else:
-        return True
-
-
 def delete_event_by_name(api, event_name):
     """
     (Written for functionality 5)
@@ -241,7 +228,7 @@ def delete_event_by_name(api, event_name):
     res = search_event(api, event_name)
     for item in res:
         found = True
-        delete_event(api, item['id'])
+        api.events().delete(calendarId='primary', eventId=item['id']).execute()
     if not found:
         raise ProcessLookupError("No events with that name")
 
@@ -253,8 +240,8 @@ def main():
     
     # events = get_upcoming_events(api, time_now, 10)
     # events = get_year_past_events(api, time_now, 5)
-    #events = get_year_future_events(api, time_now, 2)
-    # events = get_specific_time_events(api, 2020, 8, 17)
+    # events = get_year_future_events(api, time_now, 2)
+    events = get_specific_time_events(api, 2020, 8, 17)
     # events = search_event(api, 'SanityCheck')
     # delete_event(api,'test1')
 
