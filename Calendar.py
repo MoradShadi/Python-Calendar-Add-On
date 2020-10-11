@@ -127,7 +127,8 @@ def get_specific_time_events(api, year, month=0, day=0):
     if month < 0 or month > 12:
         raise ValueError("Invalid month input.")
     if day < 0 or day > 31:
-        raise ValueError("Invalid day input.")    
+        raise ValueError("Invalid day input.")
+
     # If month and day are not provided, print all events in the year
     if month == 0 and day == 0:
         start_time = (datetime.datetime.utcnow().replace(year=year, month=1, day=1, hour=0, minute=0, second=0,
@@ -186,6 +187,7 @@ def navigate_calendar(api):
                 break
 
             print("\nResults: \n")
+            i = 1
             if not events:
                 print('No events found.')
             for event in events:
@@ -194,14 +196,41 @@ def navigate_calendar(api):
                 if event['reminders'].get('useDefault'):
                     Reminders += "{Time: 10 minutes before, Method: pop-up}"
                 else:
-                    for reminder in event['reminders'].get('overrides'):
-                        Reminders += "{Time: "
-                        Reminders += str(reminder['minutes'])
-                        Reminders += " minutes before, Method: "
-                        Reminders += str(reminder['method'])
-                        Reminders += "}"
-                print(start, event['summary'], "| Reminders -> ", Reminders)
+                    if event['reminders'].get('overrides') is not None:
+                        for reminder in event['reminders'].get('overrides'):
+                            Reminders += "{Time: "
+                            Reminders += str(reminder['minutes'])
+                            Reminders += " minutes before, Method: "
+                            Reminders += str(reminder['method'])
+                            Reminders += "}"
+                print(str(i), ":", start, event['summary'], "| Reminders -> ", Reminders)
+                i += 1
             print("\n")
+
+            if events:
+                idx = int(input("Please input the number associated with the specific event to view detailed "
+                                "information or please input 0 to exit: "))
+                if idx > i:
+                    raise ValueError
+
+                if idx != 0:
+                    specific_event = events[idx - 1]
+                    print("\n")
+                    print("Kind: " + specific_event["kind"] + "\n" +
+                          "Id: " + specific_event["id"] + "\n" +
+                          "Status: " + specific_event["status"] + "\n" +
+                          "HTML Link: " + specific_event["htmlLink"] + "\n" +
+                          "Created: " + specific_event["created"] + "\n" +
+                          "Updated: " + specific_event["updated"] + "\n" +
+                          "Summary: " + specific_event["summary"] + "\n" +
+                          "Creator: " + specific_event["creator"]["email"] + "\n" +
+                          "Organizer: " + specific_event["organizer"]["email"])
+                    if 'date' in specific_event["start"]:
+                        print("Start: " + specific_event["start"]["date"] + "\n" +
+                              "End: " + specific_event["end"]["date"] + "\n")
+                    else:
+                        print("Start: " + specific_event["start"]["dateTime"] + "\n" +
+                              "End: " + specific_event["end"]["dateTime"] + "\n")
 
         except ValueError:
             print("Invalid input. Please try again.")
@@ -235,13 +264,14 @@ def delete_event_by_name(api, event_name):
 
 def main():
     api = get_calendar_api()
-    # navigate_calendar(api)
+    navigate_calendar(api)
     time_now = datetime.datetime.utcnow().isoformat() + 'Z'  # 'Z' indicates UTC time
-    
+
+    events = []
     # events = get_upcoming_events(api, time_now, 10)
     # events = get_year_past_events(api, time_now, 5)
     # events = get_year_future_events(api, time_now, 2)
-    events = get_specific_time_events(api, 2020, 8, 17)
+    # events = get_specific_time_events(api, 2020, 8, 17)
     # events = search_event(api, 'SanityCheck')
     # delete_event(api,'test1')
 
@@ -253,12 +283,13 @@ def main():
         if event['reminders'].get('useDefault'):
             Reminders += "{Time: 10 minutes before, Method: pop-up}"
         else:
-            for reminder in event['reminders'].get('overrides'):
-                Reminders += "{Time: "
-                Reminders += str(reminder['minutes'])
-                Reminders += " minutes before, Method: "
-                Reminders += str(reminder['method'])
-                Reminders += "}"
+            if event['reminders'].get('overrides') is not None:
+                for reminder in event['reminders'].get('overrides'):
+                    Reminders += "{Time: "
+                    Reminders += str(reminder['minutes'])
+                    Reminders += " minutes before, Method: "
+                    Reminders += str(reminder['method'])
+                    Reminders += "}"
         print(start, event['summary'], "| Reminders -> ", Reminders)
     # delete_event_by_name(api, "test1")
 
