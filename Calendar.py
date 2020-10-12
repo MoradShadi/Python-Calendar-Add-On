@@ -247,10 +247,11 @@ def search_event(api, keyword):
     Searches through the user's calendar for events that contain the specified
     keyword and returns them.
     """
-    events_result = api.events().list(calendarId='primary', q=keyword,
+    events_result = api.events().list(calendarId='primary',
                                       singleEvents=True,
                                       orderBy='startTime').execute()
-    return events_result.get('items', [])
+
+    return (event for event in events_result.get('items', []) if keyword in event['summary'])
 
 
 def delete_event_by_name(api, event_name):
@@ -272,12 +273,12 @@ def main():
     # navigate_calendar(api)
     time_now = datetime.datetime.utcnow().isoformat() + 'Z'  # 'Z' indicates UTC time
 
-    events = []
+    # events = []
     # events = get_upcoming_events(api, time_now, 10)
     # events = get_year_past_events(api, time_now, 5)
     # events = get_year_future_events(api, time_now, 2)
     # events = get_specific_time_events(api, 2020, 8, 17)
-    # events = search_event(api, 'SanityCheck')
+    events = search_event(api, 'FIT1047')
     # delete_event(api,'test1')
 
     if not events:
