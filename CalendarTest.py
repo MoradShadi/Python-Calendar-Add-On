@@ -1,11 +1,12 @@
+import sys
 import unittest
+from io import StringIO
 from unittest.mock import Mock
 import Calendar
 
 # Add other imports here if needed
 import datetime
 from dateutil.relativedelta import relativedelta
-from googleapiclient.errors import HttpError
 
 
 class CalendarTest(unittest.TestCase):
@@ -46,6 +47,11 @@ class CalendarTest(unittest.TestCase):
         mock_api = Mock()
         # Creates a mock of the calendar api object so it can be varied safely instead of the actual calendar.
         events = Calendar.get_year_past_events(mock_api, start_time, num_years)
+
+        # Asserts that the call has been made once.
+        self.assertEqual(
+            mock_api.events.return_value.list.return_value.execute.return_value.get.call_count, 1)
+
         # Assigns the parameter list at index 0 (only list in this case) to variables so they can be used for
         # comparison later.
         args, kwargs = mock_api.events.return_value.list.call_args_list[0]
@@ -63,7 +69,7 @@ class CalendarTest(unittest.TestCase):
             Calendar.get_year_past_events(mock_api, start_time, -1)
 
     def test_get_past_year_events(self):
-        for iteration in range(3,7):
+        for iteration in range(3, 7):
             start_time = datetime.datetime.utcnow().isoformat() + 'Z'
             num_years = iteration
             api = Calendar.get_calendar_api()
@@ -92,6 +98,11 @@ class CalendarTest(unittest.TestCase):
         mock_api = Mock()
         # Creates a mock of the calendar api object so it can be varied safely instead of the actual calendar.
         events = Calendar.get_year_future_events(mock_api, start_time, num_years)
+
+        # Asserts that the call has been made once.
+        self.assertEqual(
+            mock_api.events.return_value.list.return_value.execute.return_value.get.call_count, 1)
+
         # Assigns the parameter list at index 0 (only list in this case) to variables so they can be used for
         # comparison later.
         args, kwargs = mock_api.events.return_value.list.call_args_list[0]
@@ -109,7 +120,7 @@ class CalendarTest(unittest.TestCase):
             Calendar.get_year_past_events(mock_api, start_time, -1)
 
     def test_get_future_year_events(self):
-        for iteration in range(-2,4):
+        for iteration in range(-2, 4):
             start_time = datetime.datetime.utcnow().isoformat() + 'Z'
             num_years = iteration
             api = Calendar.get_calendar_api()
@@ -138,16 +149,16 @@ class CalendarTest(unittest.TestCase):
         day = 15
 
         # gets the event in the whole year
-        year_events_before = len(Calendar.get_specific_time_events(api,year))
+        year_events_before = len(Calendar.get_specific_time_events(api, year))
         
         # gets the events in given month
-        month_events_before = len(Calendar.get_specific_time_events(api,year,month))
+        month_events_before = len(Calendar.get_specific_time_events(api, year, month))
 
         # gets the events in given day
-        day_events_before = len(Calendar.get_specific_time_events(api, year,month,day))
+        day_events_before = len(Calendar.get_specific_time_events(api, year, month, day))
 
         # gets the events on different day for checking later
-        check_day_events_before = len(Calendar.get_specific_time_events(api, year,month,9))
+        check_day_events_before = len(Calendar.get_specific_time_events(api, year, month, 9))
 
         # Inserts a test event in same given day
         start_time = (datetime.datetime.utcnow().replace(year=year, month=month, day=day, hour=0, minute=0, second=0,
@@ -160,16 +171,16 @@ class CalendarTest(unittest.TestCase):
         api.events().insert(calendarId='primary', body=body).execute()
 
         # check updated number of events in year
-        self.assertEqual(len(Calendar.get_specific_time_events(api,year)), year_events_before + 1)
+        self.assertEqual(len(Calendar.get_specific_time_events(api, year)), year_events_before + 1)
 
         # check updated number of events in month
-        self.assertEqual(len(Calendar.get_specific_time_events(api,year,month)), month_events_before + 1)
+        self.assertEqual(len(Calendar.get_specific_time_events(api, year, month)), month_events_before + 1)
 
         # check updated number of events in day
-        self.assertEqual(len(Calendar.get_specific_time_events(api,year,month,day)), day_events_before + 1)
+        self.assertEqual(len(Calendar.get_specific_time_events(api, year, month, day)), day_events_before + 1)
 
-        # check that others days havent changed
-        self.assertEqual(len(Calendar.get_specific_time_events(api,year,month,9)), check_day_events_before)
+        # check that others days haven't changed
+        self.assertEqual(len(Calendar.get_specific_time_events(api, year, month, 9)), check_day_events_before)
 
         # removes the test event added
         Calendar.delete_event_by_name(api, '__testing__')
@@ -186,11 +197,11 @@ class CalendarTest(unittest.TestCase):
         # tests exception for invalid month entry
         mock_api = Mock()
         with self.assertRaises(ValueError):
-            Calendar.get_specific_time_events(mock_api, 2020,-1)
+            Calendar.get_specific_time_events(mock_api, 2020, -1)
 
         mock_api = Mock()
         with self.assertRaises(ValueError):
-            Calendar.get_specific_time_events(mock_api, 2020,15)
+            Calendar.get_specific_time_events(mock_api, 2020, 15)
 
         # tests exception for invalid day entry
         mock_api = Mock()
@@ -205,6 +216,202 @@ class CalendarTest(unittest.TestCase):
         mock_api = Mock()
         with self.assertRaises(ValueError):
             Calendar.get_specific_time_events(mock_api, 2020, 11, -2)
+
+    def test_navigate_calendar(self):
+        api = Calendar.get_calendar_api()
+        year = 2100
+        month = 7
+        day = 15
+
+        # Inserts a test event in same given day
+        start_time = (datetime.datetime.utcnow().replace(year=year, month=month, day=day, hour=0, minute=0, second=0,
+                                                         microsecond=0))
+        end_time = (start_time + relativedelta(days=+1))
+        start_time = start_time.isoformat() + "Z"
+        end_time = end_time.isoformat() + "Z"
+        body = {'summary': '__testing__', 'start': {'dateTime': start_time},
+                'end': {'dateTime': end_time}}
+        api.events().insert(calendarId='primary', body=body).execute()
+
+        # User input section
+        old_stdout = sys.stdout
+        # Suppresses the printing in the menu so that it does not show when conducting the test
+        suppress_text = StringIO()
+        sys.stdout = suppress_text
+
+        # Input provided to function on every occurrence of input(): 1, 2100, 1, 4
+        # This represents getting events from the year 2100, selecting the first event to view detailed
+        # information, then exiting the menu
+        sys.stdin = StringIO("1\n2100\n1\n4")
+        Calendar.navigate_calendar(api)
+        sys.stdin = sys.__stdin__
+
+        sys.stdout = old_stdout
+
+        menu_year = "------------------------------------\n" + \
+                    "Welcome to the calendar, please choose a date format to view events.\n" + \
+                    "1. Year \n" + "2. Year + Month \n" + "3. Year + Month + Date \n" + "4. Exit\n" + \
+                    "------------------------------------\nEnter option: Please input year: \nResults:"
+
+        # Ensures that the starting menu is correctly printed
+        self.assertEqual(suppress_text.getvalue()[0:243], menu_year)
+        # Ensures the event can be obtained
+        self.assertEqual(suppress_text.getvalue()[246:345],
+                         "1 : 2100-07-15T08:00:00+08:00 __testing__ | Reminders ->  "
+                         "{Time: 10 minutes before, Method: pop-up}")
+        # Ensures that the detailed information is printed correctly by checking its summary
+        self.assertEqual(suppress_text.getvalue()[729:749], "Summary: __testing__")
+
+        # User input section 2
+        old_stdout = sys.stdout
+        # Suppresses the printing in the menu so that it does not show when conducting the test
+        suppress_text = StringIO()
+        sys.stdout = suppress_text
+
+        # Input provided to function on every occurrence of input(): 2, 2100, 7, 1, 4
+        # This represents getting events from July of the year 2100, selecting the first event to view detailed
+        # information, then exiting the menu
+        sys.stdin = StringIO("2\n2100\n7\n1\n4")
+        Calendar.navigate_calendar(api)
+        sys.stdin = sys.__stdin__
+
+        sys.stdout = old_stdout
+
+        menu_year_month = "------------------------------------\n" + \
+                          "Welcome to the calendar, please choose a date format to view events.\n" + \
+                          "1. Year \n" + "2. Year + Month \n" + "3. Year + Month + Date \n" + "4. Exit\n" + \
+                          "------------------------------------\nEnter option: Please input year: Please input " \
+                          "month: \nResults:"
+
+        # Ensures that the starting menu is correctly printed
+        self.assertEqual(suppress_text.getvalue()[0:263], menu_year_month)
+        # Ensures the event can be obtained
+        self.assertEqual(suppress_text.getvalue()[266:365],
+                         "1 : 2100-07-15T08:00:00+08:00 __testing__ | Reminders ->  "
+                         "{Time: 10 minutes before, Method: pop-up}")
+        # Ensures that the detailed information is printed correctly by checking its summary
+        self.assertEqual(suppress_text.getvalue()[749:769], "Summary: __testing__")
+
+        # User input section 3
+        old_stdout = sys.stdout
+        # Suppresses the printing in the menu so that it does not show when conducting the test
+        suppress_text = StringIO()
+        sys.stdout = suppress_text
+
+        # Input provided to function on every occurrence of input(): 3, 2100, 7, 15, 1, 4
+        # This represents getting events from 15th July of the year 2100, selecting the first event to view detailed
+        # information, then exiting the menu
+        sys.stdin = StringIO("3\n2100\n7\n15\n1\n4")
+        Calendar.navigate_calendar(api)
+        sys.stdin = sys.__stdin__
+
+        sys.stdout = old_stdout
+
+        menu_year_month_day = "------------------------------------\n" + \
+                              "Welcome to the calendar, please choose a date format to view events.\n" + \
+                              "1. Year \n" + "2. Year + Month \n" + "3. Year + Month + Date \n" + "4. Exit\n" + \
+                              "------------------------------------\nEnter option: Please input year: Please input " \
+                              "month: Please input day: \nResults:"
+
+        # Ensures that the starting menu is correctly printed
+        self.assertEqual(suppress_text.getvalue()[0:281], menu_year_month_day)
+        # Ensures the event can be obtained
+        self.assertEqual(suppress_text.getvalue()[284:383],
+                         "1 : 2100-07-15T08:00:00+08:00 __testing__ | Reminders ->  {Time: 10 minutes before, "
+                         "Method: pop-up}")
+        # Ensures that the detailed information is printed correctly by checking its summary
+        self.assertEqual(suppress_text.getvalue()[767:787], "Summary: __testing__")
+        Calendar.delete_event_by_name(api, '__testing__')
+
+        # Test
+        body = {'summary': '__testing__', 'start': {'date': '2100-07-15'},
+                'end': {'date': '2100-07-16'}, 'reminders': {'useDefault': False, 'overrides': [
+                {'method': 'email', 'minutes': 24 * 60}, {'method': 'popup', 'minutes': 10}, ], }}
+        api.events().insert(calendarId='primary', body=body).execute()
+
+        old_stdout = sys.stdout
+        # Suppresses the printing in the menu so that it does not show when conducting the test
+        suppress_text = StringIO()
+        sys.stdout = suppress_text
+
+        # Input provided to function on every occurrence of input(): 1, 2100, 1, 4
+        # This represents getting events from the year 2100, selecting the first event to view detailed
+        # information, then exiting the menu
+        sys.stdin = StringIO("1\n2100\n1\n4")
+        Calendar.navigate_calendar(api)
+        sys.stdin = sys.__stdin__
+
+        sys.stdout = old_stdout
+        # Ensures that creating an event with date instead of datetime works as well by testing the detailed information
+        # shown
+        self.assertEqual(suppress_text.getvalue()[852:869], "Start: 2100-07-15")
+
+        # Separator
+        old_stdout = sys.stdout
+        # Suppresses the printing in the menu so that it does not show when conducting the test
+        suppress_text = StringIO()
+        sys.stdout = suppress_text
+
+        # Input provided to function on every occurrence of input(): 1, 2200, 1, 4
+        # This represents getting events from the year 2200, selecting the first event to view detailed
+        # information, then exiting the menu
+        sys.stdin = StringIO("1\n2200\n4")
+        Calendar.navigate_calendar(api)
+        sys.stdin = sys.__stdin__
+
+        sys.stdout = old_stdout
+        self.assertEqual(suppress_text.getvalue()[246:262], "No events found.")
+
+        Calendar.delete_event_by_name(api, '__testing__')
+
+    def test_navigate_event_error_input(self):
+        api = Calendar.get_calendar_api()
+        year = 2100
+        month = 7
+        day = 15
+
+        # Inserts a test event in same given day
+        start_time = (datetime.datetime.utcnow().replace(year=year, month=month, day=day, hour=0, minute=0, second=0,
+                                                         microsecond=0))
+        end_time = (start_time + relativedelta(days=+1))
+        start_time = start_time.isoformat() + "Z"
+        end_time = end_time.isoformat() + "Z"
+        body = {'summary': '__testing__', 'start': {'dateTime': start_time},
+                'end': {'dateTime': end_time}}
+        api.events().insert(calendarId='primary', body=body).execute()
+
+        # User input section 4
+        old_stdout = sys.stdout
+        # Suppresses the printing in the menu so that it does not show when conducting the test
+        suppress_text = StringIO()
+        sys.stdout = suppress_text
+
+        # Input provided to function on every occurrence of input(): 1, test, 4
+        # This represents typing string for the year input (which is invalid)
+        sys.stdin = StringIO("1\ntest\n4")
+        Calendar.navigate_calendar(api)
+        sys.stdin = sys.__stdin__
+
+        sys.stdout = old_stdout
+        self.assertEqual(suppress_text.getvalue()[234:266], "Invalid input. Please try again.")
+
+        # Separator
+        old_stdout = sys.stdout
+        # Suppresses the printing in the menu so that it does not show when conducting the test
+        suppress_text = StringIO()
+        sys.stdout = suppress_text
+
+        # Input provided to function on every occurrence of input(): 1, 2100, 10, 4
+        # This represents getting events from the year 2200, selecting the first event to view detailed
+        # information, then exiting the menu
+        sys.stdin = StringIO("1\n2100\n10\n4")
+        Calendar.navigate_calendar(api)
+        sys.stdin = sys.__stdin__
+
+        sys.stdout = old_stdout
+        self.assertEqual(suppress_text.getvalue()[463:495], "Invalid input. Please try again.")
+
+        Calendar.delete_event_by_name(api, '__testing__')
 
     def test_search_event(self):
         api = Calendar.get_calendar_api()

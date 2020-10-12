@@ -23,7 +23,6 @@ import os.path
 from googleapiclient.discovery import build
 from google_auth_oauthlib.flow import InstalledAppFlow
 from google.auth.transport.requests import Request
-from googleapiclient.errors import HttpError
 
 # If modifying these scopes, delete the file token.pickle.
 SCOPES = ['https://www.googleapis.com/auth/calendar']
@@ -264,7 +263,7 @@ def delete_event_by_name(api, event_name):
 
 def main():
     api = get_calendar_api()
-    navigate_calendar(api)
+    # navigate_calendar(api)
     time_now = datetime.datetime.utcnow().isoformat() + 'Z'  # 'Z' indicates UTC time
 
     events = []
