@@ -233,7 +233,7 @@ class CalendarTest(unittest.TestCase):
                 'end': {'dateTime': end_time}}
         api.events().insert(calendarId='primary', body=body).execute()
 
-        # User input section
+        # -----User input test 1 - Testing showing events by providing year-----
         old_stdout = sys.stdout
         # Suppresses the printing in the menu so that it does not show when conducting the test
         suppress_text = StringIO()
@@ -255,14 +255,14 @@ class CalendarTest(unittest.TestCase):
 
         # Ensures that the starting menu is correctly printed
         self.assertEqual(suppress_text.getvalue()[0:243], menu_year)
-        # Ensures the event can be obtained
+        # Ensures the event can be obtained and is correctly printed
         self.assertEqual(suppress_text.getvalue()[246:345],
                          "1 : 2100-07-15T08:00:00+08:00 __testing__ | Reminders ->  "
                          "{Time: 10 minutes before, Method: pop-up}")
         # Ensures that the detailed information is printed correctly by checking its summary
         self.assertEqual(suppress_text.getvalue()[729:749], "Summary: __testing__")
 
-        # User input section 2
+        # -----User input test 2 - Testing showing events by providing year and month-----
         old_stdout = sys.stdout
         # Suppresses the printing in the menu so that it does not show when conducting the test
         suppress_text = StringIO()
@@ -285,14 +285,14 @@ class CalendarTest(unittest.TestCase):
 
         # Ensures that the starting menu is correctly printed
         self.assertEqual(suppress_text.getvalue()[0:263], menu_year_month)
-        # Ensures the event can be obtained
+        # Ensures the event can be obtained and is correctly printed
         self.assertEqual(suppress_text.getvalue()[266:365],
                          "1 : 2100-07-15T08:00:00+08:00 __testing__ | Reminders ->  "
                          "{Time: 10 minutes before, Method: pop-up}")
         # Ensures that the detailed information is printed correctly by checking its summary
         self.assertEqual(suppress_text.getvalue()[749:769], "Summary: __testing__")
 
-        # User input section 3
+        # -----User input test 3 - Testing showing events by providing year, month, and day-----
         old_stdout = sys.stdout
         # Suppresses the printing in the menu so that it does not show when conducting the test
         suppress_text = StringIO()
@@ -315,7 +315,7 @@ class CalendarTest(unittest.TestCase):
 
         # Ensures that the starting menu is correctly printed
         self.assertEqual(suppress_text.getvalue()[0:281], menu_year_month_day)
-        # Ensures the event can be obtained
+        # Ensures the event can be obtained and is printed correctly
         self.assertEqual(suppress_text.getvalue()[284:383],
                          "1 : 2100-07-15T08:00:00+08:00 __testing__ | Reminders ->  {Time: 10 minutes before, "
                          "Method: pop-up}")
@@ -323,7 +323,7 @@ class CalendarTest(unittest.TestCase):
         self.assertEqual(suppress_text.getvalue()[767:787], "Summary: __testing__")
         Calendar.delete_event_by_name(api, '__testing__')
 
-        # Test
+        # -----User input test 4 - Testing events that uses date instead of datetime-----
         body = {'summary': '__testing__', 'start': {'date': '2100-07-15'},
                 'end': {'date': '2100-07-16'}, 'reminders': {'useDefault': False, 'overrides': [
                 {'method': 'email', 'minutes': 24 * 60}, {'method': 'popup', 'minutes': 10}, ], }}
@@ -346,22 +346,24 @@ class CalendarTest(unittest.TestCase):
         # shown
         self.assertEqual(suppress_text.getvalue()[852:869], "Start: 2100-07-15")
 
-        # Separator
+        # -----User input test 5 - Testing events that uses date instead of datetime-----
         old_stdout = sys.stdout
         # Suppresses the printing in the menu so that it does not show when conducting the test
         suppress_text = StringIO()
         sys.stdout = suppress_text
 
-        # Input provided to function on every occurrence of input(): 1, 2200, 1, 4
+        # Input provided to function on every occurrence of input(): 1, 2200, 4
         # This represents getting events from the year 2200, selecting the first event to view detailed
-        # information, then exiting the menu
+        # information (For which there is none), then exiting the menu
         sys.stdin = StringIO("1\n2200\n4")
         Calendar.navigate_calendar(api)
         sys.stdin = sys.__stdin__
 
         sys.stdout = old_stdout
+        # Ensures that the correct message is printed when there are no events found
         self.assertEqual(suppress_text.getvalue()[246:262], "No events found.")
 
+        # Deletes the added event after testing
         Calendar.delete_event_by_name(api, '__testing__')
 
     def test_navigate_event_error_input(self):
@@ -380,7 +382,7 @@ class CalendarTest(unittest.TestCase):
                 'end': {'dateTime': end_time}}
         api.events().insert(calendarId='primary', body=body).execute()
 
-        # User input section 4
+        # -----User input error test 1 - Testing inputting characters for a year input-----
         old_stdout = sys.stdout
         # Suppresses the printing in the menu so that it does not show when conducting the test
         suppress_text = StringIO()
@@ -393,9 +395,11 @@ class CalendarTest(unittest.TestCase):
         sys.stdin = sys.__stdin__
 
         sys.stdout = old_stdout
+        # Ensures that the correct message is printed when characters are provided for the year input
         self.assertEqual(suppress_text.getvalue()[234:266], "Invalid input. Please try again.")
 
-        # Separator
+        # -----User input error test 2 - Testing providing out of bounds input when choosing to view detailed
+        # information about an event-----
         old_stdout = sys.stdout
         # Suppresses the printing in the menu so that it does not show when conducting the test
         suppress_text = StringIO()
@@ -409,8 +413,11 @@ class CalendarTest(unittest.TestCase):
         sys.stdin = sys.__stdin__
 
         sys.stdout = old_stdout
+        # Ensures that the correct message is printed when an out of bounds input is provided when choosing to view
+        # detailed information about an event
         self.assertEqual(suppress_text.getvalue()[463:495], "Invalid input. Please try again.")
 
+        # Deletes the added event after testing
         Calendar.delete_event_by_name(api, '__testing__')
 
     def test_search_event(self):
