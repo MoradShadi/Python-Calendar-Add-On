@@ -154,7 +154,13 @@ def get_specific_time_events(api, year, month=0, day=0):
 
 
 def navigate_calendar(api):
-
+    """
+    (Written for functionality 3)
+    This function prints out a menu that simulates the process of navigating
+    the calendar for the user. Upon selecting a year/month/day, the user can
+    also select a specified event to view more information about it. This implementation
+    is in accordance with user story 3 in the assignment.
+    """
     events = None
     while True:
         try:
