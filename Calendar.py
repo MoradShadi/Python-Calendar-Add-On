@@ -250,8 +250,11 @@ def search_event(api, keyword):
     events_result = api.events().list(calendarId='primary',
                                       singleEvents=True,
                                       orderBy='startTime').execute()
-
-    return (event for event in events_result.get('items', []) if keyword in event['summary'])
+    search_res = []
+    for event in events_result.get('items', []):
+        if keyword in event['summary']:
+            search_res.append(event)
+    return search_res
 
 
 def delete_event_by_name(api, event_name):
@@ -266,6 +269,47 @@ def delete_event_by_name(api, event_name):
         api.events().delete(calendarId='primary', eventId=item['id']).execute()
     if not found:
         raise ProcessLookupError("No events with that name")
+    return True
+
+
+def delete_event_reminder(api, event_name, index, minute=0):
+    """
+    (Written for functionality 5)
+    Deletes a specific event's reminder based on the time set for the reminder
+    (In minutes format)
+    """
+    res = search_event(api, event_name)
+    try:
+        event = (list(res)[index])
+    except IndexError:
+        raise IndexError("Invalid index for event.")
+
+    new_reminder = []
+
+    if minute != 0:
+        if event['reminders'].get('overrides') is not None:
+            for reminder in event['reminders'].get('overrides'):
+                if reminder['minutes'] != minute:
+                    new_reminder.append(reminder)
+
+            if len(new_reminder) == len(event['reminders'].get('overrides')):
+                raise ProcessLookupError("Invalid reminder.")
+
+            event['reminders'] = {
+                'useDefault': False,
+                'overrides': new_reminder
+            }
+        elif event['reminders'].get('useDefault') is True and minute == 10:
+            event['reminders'] = {
+                'useDefault': False
+            }
+    else:
+        event['reminders'] = {
+            'useDefault': False
+        }
+
+    api.events().update(calendarId='primary', eventId=event['id'], body=event).execute()
+    return True
 
 
 def main():
@@ -273,12 +317,13 @@ def main():
     # navigate_calendar(api)
     time_now = datetime.datetime.utcnow().isoformat() + 'Z'  # 'Z' indicates UTC time
 
-    # events = []
+    events = []
     # events = get_upcoming_events(api, time_now, 10)
     # events = get_year_past_events(api, time_now, 5)
     # events = get_year_future_events(api, time_now, 2)
     # events = get_specific_time_events(api, 2020, 8, 17)
-    events = search_event(api, 'FIT1047')
+    # events = search_event(api, 'Sanity')
+    # delete_event_reminder(api, 'testing', 0, 23)
     # delete_event(api,'test1')
 
     if not events:
@@ -297,7 +342,7 @@ def main():
                     Reminders += str(reminder['method'])
                     Reminders += "}"
         print(start, event['summary'], "| Reminders -> ", Reminders)
-    # delete_event_by_name(api, "test1")
+    # print(delete_event_by_name(api, "testing"))
 
 
 if __name__ == "__main__":  # Prevents the main() function from being called by the test suite runner
