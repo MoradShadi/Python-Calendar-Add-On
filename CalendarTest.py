@@ -449,11 +449,12 @@ class CalendarTest(unittest.TestCase):
             Calendar.delete_event_by_name(api, '__test1__')
 
         # prepares information for test event to be added to calendar   
-        body = {'summary': '__test1__', 'start': {'dateTime': '2020-10-28T09:00:00-07:00'}, 'end': {'dateTime': '2020-10-28T17:00:00-07:00'}}
+        body = {'summary': '__test1__',
+                'start': {'dateTime': '2020-10-28T09:00:00-07:00'}, 'end': {'dateTime': '2020-10-28T17:00:00-07:00'}}
         # Inserts an event to the calendar so it can be deleted later on to test if function carries out correctly
         api.events().insert(calendarId='primary', body=body).execute()
         # tests that the event is deleted successfully with no issues
-        self.assertEqual(Calendar.delete_event_by_name(api, '__test1__'), None)
+        self.assertEqual(Calendar.delete_event_by_name(api, '__test1__'), True)
         # test again to make sure that an error is raised after the event has been deleted
         with self.assertRaises(ProcessLookupError):
             Calendar.delete_event_by_name(api, '__test1__')
