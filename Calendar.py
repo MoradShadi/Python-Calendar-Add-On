@@ -282,7 +282,7 @@ def delete_event_reminder(api, event_name, index, minute=0):
     try:
         event = (list(res)[index])
     except IndexError:
-        raise IndexError("Invalid index for event.")
+        raise IndexError("Invalid event.")
 
     new_reminder = []
 
@@ -323,7 +323,7 @@ def main():
     # events = get_year_future_events(api, time_now, 2)
     # events = get_specific_time_events(api, 2020, 8, 17)
     # events = search_event(api, 'Sanity')
-    # delete_event_reminder(api, 'testing', 0, 23)
+    delete_event_reminder(api, 'testing', 0, 22)
     # delete_event(api,'test1')
 
     if not events:

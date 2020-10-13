@@ -426,7 +426,7 @@ class CalendarTest(unittest.TestCase):
         # Ensures that the results obtained when querying using the self written method matches the
         # results when querying using Google Calendar API methods
         self.assertEqual(Calendar.search_event(api, 'vnjfnvjfenvjefnvienbfivbefbvhejbf'), api.events().list(calendarId='primary', q='vnjfnvjfenvjefnvienbfivbefbvhejbf').execute().get('items', []))
-        self.assertEqual(Calendar.search_event(api, 'test'), api.events().list(calendarId='primary', q='test').execute().get('items', []))
+        self.assertEqual(Calendar.search_event(api, 'test123'), api.events().list(calendarId='primary', q='test123').execute().get('items', []))
         self.assertEqual(Calendar.search_event(api, '123456789'), api.events().list(calendarId='primary', q='123456789').execute().get('items', []))
 
         # Get the amount of events in the calendar when searching before adding the new test event
@@ -458,8 +458,58 @@ class CalendarTest(unittest.TestCase):
         # test again to make sure that an error is raised after the event has been deleted
         with self.assertRaises(ProcessLookupError):
             Calendar.delete_event_by_name(api, '__test1__')
-        
-        
+
+    def test_delete_event_reminder(self):
+        api = Calendar.get_calendar_api()
+        # tests if exception is correctly raised when trying to delete event that doesnt exist
+        with self.assertRaises(IndexError):
+            Calendar.delete_event_reminder(api, '__test1__', 0, 10)
+
+        # prepares information for test event to be added to calendar
+        body = {'summary': '__test1__',
+                'start': {'dateTime': '2020-10-28T09:00:00-07:00'},
+                'end': {'dateTime': '2020-10-28T17:00:00-07:00'},
+                'reminders': {'useDefault': False, 'overrides': [{'method': 'popup', 'minutes': 20},
+                                                                 {'method': 'popup', 'minutes': 30},
+                                                                 {'method': 'popup', 'minutes': 180},
+                                                                 {'method': 'popup', 'minutes': 500}], }}
+        # Inserts an event to the calendar so it can be deleted later on to test if function carries out correctly
+        api.events().insert(calendarId='primary', body=body).execute()
+
+        Calendar.delete_event_reminder(api, '__test1__', 0, 20)
+
+        test_event = Calendar.search_event(api, "__test1__")[0]
+        for reminder in test_event['reminders'].get('overrides'):
+            self.assertNotEqual(reminder['minutes'], 20)
+        self.assertEqual(len(test_event['reminders'].get('overrides')), 3)
+
+        with self.assertRaises(ProcessLookupError):
+            Calendar.delete_event_reminder(api, '__test1__', 0, 1000)
+
+        Calendar.delete_event_reminder(api, '__test1__', 0)
+        test_event = Calendar.search_event(api, "__test1__")[0]
+        self.assertEqual(test_event['reminders'].get('overrides'), None)
+
+        Calendar.delete_event_by_name(api, '__test1__')
+
+        # prepares information for test event to be added to calendar
+        body = {'summary': '__test1__',
+                'start': {'dateTime': '2020-10-28T09:00:00-07:00'},
+                'end': {'dateTime': '2020-10-28T17:00:00-07:00'},
+                'reminders': {'useDefault': True}}
+        # Inserts an event to the calendar so it can be deleted later on to test if function carries out correctly
+        api.events().insert(calendarId='primary', body=body).execute()
+
+        Calendar.delete_event_reminder(api, '__test1__', 0, 100)
+        test_event = Calendar.search_event(api, "__test1__")[0]
+        self.assertEqual(test_event['reminders'].get('useDefault'), True)
+        Calendar.delete_event_reminder(api, '__test1__', 0, 10)
+        test_event = Calendar.search_event(api, "__test1__")[0]
+        self.assertEqual(test_event['reminders'].get('useDefault'), False)
+
+        Calendar.delete_event_by_name(api, '__test1__')
+
+
 def main():
     # Create the test suite from the cases above.
     suite = unittest.TestLoader().loadTestsFromTestCase(CalendarTest)
