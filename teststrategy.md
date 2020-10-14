@@ -58,17 +58,21 @@ With that, we should be able to cover all cases for the search function.
 #### User story 5
 > As a user, I can delete events and reminders.
 
-The search function for our Calendar Application is called `delete_event_by_name()`, which searches the calendar to find events that has the provided keyword in their names and removes them from the calendar. Just like the previous user story, the testing function for this is also fairly straightforward, and we can only really partition the inputs into two different categories using **equivalence partitioning**, which is:
+The function for deleting events in our Calendar Application is called `delete_event_by_name()`, which searches the calendar to find events that has the provided keyword in their names and removes them from the calendar. Just like the previous user story, the testing function for this is also fairly straightforward, and we can only really partition the inputs into two different categories using **equivalence partitioning**, which is:
 
  1. Deleting an event that exists in the calendar
  2. Deleting an event that does not exist in the calendar
 
-With that, we should be able to cover all cases for the delete function.
+With that, we should be able to cover all cases for the event delete function.
 
+On the other hand, for deleting reminders, we have a function called `delete_event_reminder()`, which searches a given event for a reminder with the specified amount of minutes and deletes it. Since there are a plethora of conditions to account for in the function, such as if the given reminder exists, or if the given event name exists in the calendar, we utilized a **condition + branch coverage** to ensure each condition and its respective branches are tested accordingly by a test case. With that, we can ensure that the function will behave appropriately in any given scenario.
+
+<br></br>
 ### Other test strategies conducted
 
 #### Mocking
-(WIP)
+Other than testing out the actual Google Calendar API, mocking is also performed as the API is a web service and may be too slow to test out for some instances. Mocking is also conducted to simulate exceptions that may be hard to trigger in the actual system.
+
 #### Coverage testing
-To find out the coverage of our testing file, we utilized the coverage.py tool to measure and see which lines of code in the Calendar Application we covered, and which lines we did not. After running the coverage tool initially, we realized that our coverage of the code was only at around 60%, which means that our test file is missing a lot of the code. With that information, we added more tests to cover the lines of code that we did not tested previously before running the coverage file again, as we ideally want the coverage of our test file to be as close to 100% as possible. 
+To find out the coverage of our testing file, we utilized the coverage.py tool to measure and see which lines of code in the Calendar Application we covered, and which lines we did not. After running the coverage tool initially, we realized that our coverage of the code was only at around 60%, which means that our test file is missing a lot of the code. With that information, we added more tests to cover the lines of code that we did not tested previously before running the coverage file again, as we ideally want the coverage of our test file to be as close to 100% as possible. Ultimately, since some of the code such as the `get_calendar_api()` function and the `main()` function do not need to be tested, we resorted to just testing everything that we can and end up with with a coverage of around 80+% for our test code.
 
