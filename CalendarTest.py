@@ -42,7 +42,7 @@ class CalendarTest(unittest.TestCase):
     # Add more test cases here
     def test_get_past_years_events_mock(self):
         
-        for i in range(4,6):
+        for i in range(4,7):
             start_time = datetime.datetime.utcnow().isoformat() + 'Z'
             num_years = i
 
@@ -89,32 +89,29 @@ class CalendarTest(unittest.TestCase):
             Calendar.delete_event_by_name(api, '__testing__')
 
     def test_get_future_years_events_mock(self):
-        start_time = datetime.datetime.utcnow().isoformat() + 'Z'
-        num_years = 2
 
-        mock_api = Mock()
-        # Creates a mock of the calendar api object so it can be varied safely instead of the actual calendar.
-        events = Calendar.get_year_future_events(mock_api, start_time, num_years)
+        for i in range(1,4):
+            start_time = datetime.datetime.utcnow().isoformat() + 'Z'
+            num_years = i
 
-        # Asserts that the call has been made once.
-        self.assertEqual(
-            mock_api.events.return_value.list.return_value.execute.return_value.get.call_count, 1)
+            mock_api = Mock()
+            if num_years <= 1:
+                with self.assertRaises(ValueError):
+                    Calendar.get_year_past_events(mock_api, start_time, num_years)
+                continue
+            # Creates a mock of the calendar api object so it can be varied safely instead of the actual calendar.
+            events = Calendar.get_year_future_events(mock_api, start_time, num_years)
 
-        # Assigns the parameter list at index 0 (only list in this case) to variables so they can be used for
-        # comparison later.
-        args, kwargs = mock_api.events.return_value.list.call_args_list[0]
+            # Asserts that the call has been made once.
+            self.assertEqual(
+                mock_api.events.return_value.list.return_value.execute.return_value.get.call_count, 1)
 
-        # Tests that we are accurately querying for events from at least next 2 years (as specified)
-        self.assertEqual(int(kwargs['timeMax'][:4]) - int(kwargs['timeMin'][:4]), num_years)
+            # Assigns the parameter list at index 0 (only list in this case) to variables so they can be used for
+            # comparison later.
+            args, kwargs = mock_api.events.return_value.list.call_args_list[0]
 
-        # Tests if an exception is raised when the number of events entered is 1 or less
-        mock_api = Mock()
-        with self.assertRaises(ValueError):
-            Calendar.get_year_past_events(mock_api, start_time, 1)
-
-        mock_api = Mock()
-        with self.assertRaises(ValueError):
-            Calendar.get_year_past_events(mock_api, start_time, -1)
+            # Tests that we are accurately querying for events from at least next 2 years (as specified)
+            self.assertEqual(int(kwargs['timeMax'][:4]) - int(kwargs['timeMin'][:4]), num_years)
 
     def test_get_future_year_events(self):
         for iteration in range(-2, 4):
