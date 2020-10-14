@@ -41,23 +41,29 @@ class CalendarTest(unittest.TestCase):
 
     # Add more test cases here
     def test_get_past_years_events_mock(self):
-        start_time = datetime.datetime.utcnow().isoformat() + 'Z'
-        num_years = 5
+        
+        for i in range(4,6):
+            start_time = datetime.datetime.utcnow().isoformat() + 'Z'
+            num_years = i
 
-        mock_api = Mock()
-        # Creates a mock of the calendar api object so it can be varied safely instead of the actual calendar.
-        events = Calendar.get_year_past_events(mock_api, start_time, num_years)
+            mock_api = Mock()
+            if num_years <= 4:
+                with self.assertRaises(ValueError):
+                    Calendar.get_year_past_events(mock_api, start_time, num_years)
+                continue
+            # Creates a mock of the calendar api object so it can be varied safely instead of the actual calendar.
+            events = Calendar.get_year_past_events(mock_api, start_time, num_years)
 
-        # Asserts that the call has been made once.
-        self.assertEqual(
-            mock_api.events.return_value.list.return_value.execute.return_value.get.call_count, 1)
+            # Asserts that the call has been made once.
+            self.assertEqual(
+                mock_api.events.return_value.list.return_value.execute.return_value.get.call_count, 1)
 
-        # Assigns the parameter list at index 0 (only list in this case) to variables so they can be used for
-        # comparison later.
-        args, kwargs = mock_api.events.return_value.list.call_args_list[0]
+            # Assigns the parameter list at index 0 (only list in this case) to variables so they can be used for
+            # comparison later.
+            args, kwargs = mock_api.events.return_value.list.call_args_list[0]
 
-        # Tests that we are accurately querying for events from at least 5 years ago (as specified)
-        self.assertEqual(int(kwargs['timeMax'][:4]) - int(kwargs['timeMin'][:4]), num_years)
+            # Tests that we are accurately querying for events from at least 5 years ago (as specified)
+            self.assertEqual(int(kwargs['timeMax'][:4]) - int(kwargs['timeMin'][:4]), num_years)
 
         # Tests if an exception is raised when the number of events entered is 4 or less
         mock_api = Mock()
