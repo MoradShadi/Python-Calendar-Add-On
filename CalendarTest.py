@@ -430,6 +430,11 @@ class CalendarTest(unittest.TestCase):
         mock_search_event.return_value = event
         self.assertEqual(Calendar.search_event(mock_api, 'testing'), event)
 
+        event = [{'kind': 'calendar#event', 'etag': '"3203969478692000"', 'id': '0m1rmn75frd3jpn2cd6ha3015p', 'status': 'confirmed', 'htmlLink': 'https://www.google.com/calendar/event?eid=MG0xcm1uNzVmcmQzanBuMmNkNmhhMzAxNXAgbWFibzAwMDNAc3R1ZGVudC5tb25hc2guZWR1', 'created': '2020-10-06T11:45:22.000Z', 'updated': '2020-10-06T11:45:22.831Z', 'summary': 'john', 'creator': {'email': 'mabo0003@student.monash.edu', 'self': True}, 'organizer': {'email': 'mabo0003@student.monash.edu', 'self': True}, 'start': {'dateTime': '2020-10-08T10:00:00+08:00'}, 'end': {'dateTime': '2020-10-08T10:30:00+08:00'}, 'iCalUID': '0m1rmn75frd3jpn2cd6ha3015p@google.com', 'sequence': 0, 'reminders': {'useDefault': False, 'overrides': [{'method': 'popup', 'minutes': 10}, {'method': 'email', 'minutes': 50}]}}]
+        # Sets the return value to a sample return (Found an event)
+        mock_search_event.return_value = event
+        self.assertEqual(Calendar.search_event(mock_api, 'john'), event)
+        
         event = []
         # Sets the return value to a sample empty return (No events found)
         mock_search_event.return_value = event
