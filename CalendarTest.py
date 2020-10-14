@@ -59,10 +59,10 @@ class CalendarTest(unittest.TestCase):
         # Tests that we are accurately querying for events from at least 5 years ago (as specified)
         self.assertEqual(int(kwargs['timeMax'][:4]) - int(kwargs['timeMin'][:4]), num_years)
 
-        # Tests if an exception is raised when the number of events entered is 0 or less
+        # Tests if an exception is raised when the number of events entered is 4 or less
         mock_api = Mock()
         with self.assertRaises(ValueError):
-            Calendar.get_year_past_events(mock_api, start_time, 0)
+            Calendar.get_year_past_events(mock_api, start_time, 4)
 
         mock_api = Mock()
         with self.assertRaises(ValueError):
@@ -110,10 +110,10 @@ class CalendarTest(unittest.TestCase):
         # Tests that we are accurately querying for events from at least next 2 years (as specified)
         self.assertEqual(int(kwargs['timeMax'][:4]) - int(kwargs['timeMin'][:4]), num_years)
 
-        # Tests if an exception is raised when the number of events entered is 0 or less
+        # Tests if an exception is raised when the number of events entered is 1 or less
         mock_api = Mock()
         with self.assertRaises(ValueError):
-            Calendar.get_year_past_events(mock_api, start_time, 0)
+            Calendar.get_year_past_events(mock_api, start_time, 1)
 
         mock_api = Mock()
         with self.assertRaises(ValueError):
@@ -434,7 +434,6 @@ class CalendarTest(unittest.TestCase):
         event = [{'kind': 'calendar#event', 'etag': '"3205310083330000"', 'id': '2rf8r17o1jmier8f0eahofj2uo', 'status': 'confirmed', 'htmlLink': 'https://www.google.com/calendar/event?eid=MnJmOHIxN28xam1pZXI4ZjBlYWhvZmoydW8gd3RlbzAwMTFAc3R1ZGVudC5tb25hc2guZWR1', 'created': '2020-10-14T05:57:21.000Z', 'updated': '2020-10-14T05:57:21.665Z', 'summary': 'testing', 'creator': {'email': 'wteo0011@student.monash.edu', 'self': True}, 'organizer': {'email': 'wteo0011@student.monash.edu', 'self': True}, 'start': {'dateTime': '2020-10-14T15:30:00+08:00'}, 'end': {'dateTime': '2020-10-14T16:30:00+08:00'}, 'iCalUID': '2rf8r17o1jmier8f0eahofj2uo@google.com', 'sequence': 0, 'reminders': {'useDefault': True}}]
         # Sets the return value to a sample return (Found an event)
         mock_search_event.return_value = event
-        print(mock_search_event)
         self.assertEqual(Calendar.search_event(mock_api, 'testing'), event)
 
         event = []
