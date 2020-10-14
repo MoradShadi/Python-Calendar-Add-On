@@ -1,7 +1,7 @@
 import sys
 import unittest
 from io import StringIO
-from unittest.mock import Mock
+from unittest.mock import Mock, patch
 import Calendar
 
 # Add other imports here if needed
@@ -419,6 +419,14 @@ class CalendarTest(unittest.TestCase):
 
         # Deletes the added event after testing
         Calendar.delete_event_by_name(api, '__testing__')
+
+    @patch('Calendar.search_event')
+    def test_search_event_mock(self, mock_search_event):
+        event = [{'kind': 'calendar#event', 'etag': '"3205310083330000"', 'id': '2rf8r17o1jmier8f0eahofj2uo', 'status': 'confirmed', 'htmlLink': 'https://www.google.com/calendar/event?eid=MnJmOHIxN28xam1pZXI4ZjBlYWhvZmoydW8gd3RlbzAwMTFAc3R1ZGVudC5tb25hc2guZWR1', 'created': '2020-10-14T05:57:21.000Z', 'updated': '2020-10-14T05:57:21.665Z', 'summary': 'testing', 'creator': {'email': 'wteo0011@student.monash.edu', 'self': True}, 'organizer': {'email': 'wteo0011@student.monash.edu', 'self': True}, 'start': {'dateTime': '2020-10-14T15:30:00+08:00'}, 'end': {'dateTime': '2020-10-14T16:30:00+08:00'}, 'iCalUID': '2rf8r17o1jmier8f0eahofj2uo@google.com', 'sequence': 0, 'reminders': {'useDefault': True}}]
+        mock_search_event.return_value = event
+
+        mock_api = Mock()
+        self.assertEqual(Calendar.search_event(mock_api, 'testing'), event)
 
     def test_search_event(self):
         api = Calendar.get_calendar_api()
