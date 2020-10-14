@@ -434,6 +434,8 @@ class CalendarTest(unittest.TestCase):
         # Sets the return value to a sample return (Found an event)
         mock_search_event.return_value = event
         self.assertEqual(Calendar.search_event(mock_api, 'john'), event)
+        #tests that the event can be found with a similar name but not the exact name
+        self.assertEqual(Calendar.search_event(mock_api, 'johnny'), event)
         
         event = []
         # Sets the return value to a sample empty return (No events found)
