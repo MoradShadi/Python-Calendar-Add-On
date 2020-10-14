@@ -60,6 +60,10 @@ def get_upcoming_events(api, starting_time, number_of_events):
     """
     Shows basic usage of the Google Calendar API.
     Prints the start and name of the next n events on the user's calendar.
+
+    :param api: API of the Google Calendar
+    :param starting_time: The starting time to be used to begin querying for events
+    :param number_of_events: The number of events we want to look for
     """
     if number_of_events <= 0:
         raise ValueError("Number of events must be at least 1.")
@@ -79,8 +83,13 @@ def get_year_past_events(api, starting_time, number_of_years):
     Given a fixed number of years, prints the start and name of past events
     that have occurred on the user's calendar over the span of the past specified year(s) up
     till today.
-    """
 
+    :param api: API of the Google Calendar
+    :param starting_time: The starting time to be used to begin querying for events
+    :param number_of_years: The number of years in the past that we want to search through
+    for events
+    """
+    # Changes the date to the correct format for Google Calendar API
     new_min = (datetime.datetime.fromisoformat(starting_time[:-1]) -
                relativedelta(years=+number_of_years)).isoformat() + 'Z'
 
@@ -99,7 +108,13 @@ def get_year_future_events(api, starting_time, number_of_years):
     Given a fixed number of years, prints the start and name of upcoming
     events that are scheduled on the user's calendar from today over the span of the
     next specified year(s).
+
+    :param api: API of the Google Calendar
+    :param starting_time: The starting time to be used to begin querying for events
+    :param number_of_years: The number of years in the future that we want to search through
+    for events
     """
+    # Changes the date to the correct format for Google Calendar API
     new_max = (datetime.datetime.fromisoformat(starting_time[:-1]) +
                relativedelta(years=+number_of_years)).isoformat() + 'Z'
 
@@ -120,6 +135,13 @@ def get_specific_time_events(api, year, month=0, day=0):
     if a day input is not provided, all events that occur in the specific year's
     month will be printed. Likewise, if the day and month inputs are both not provided,
     all events that occur in the specific year will be printed.
+
+    :param api: API of the Google Calendar
+    :param year: The year we want to search through for events
+    :param month: The month we want to search through for events, if this param is not
+    provided, all events in the specified year will be shown
+    :param day: The day we want to search through for events, if this param is not
+    provided, all events in the specified year's month will be shown
     """
     if year <= 0:
         raise ValueError("Invalid year input.")
@@ -160,10 +182,13 @@ def navigate_calendar(api):
     the calendar for the user. Upon selecting a year/month/day, the user can
     also select a specified event to view more information about it. This implementation
     is in accordance with user story 3 in the assignment.
+
+    :param api: API of the Google Calendar
     """
     events = None
     while True:
         try:
+            # Menu for user to choose year/month/date to view events
             print("------------------------------------\n"
                   "Welcome to the calendar, please choose a date format to view events.\n"
                   "1. Year \n"
@@ -191,6 +216,7 @@ def navigate_calendar(api):
             elif user_input == 4:
                 break
 
+            # Prints out the list of events that have been queried
             print("\nResults: \n")
             i = 1
             if not events:
@@ -212,6 +238,7 @@ def navigate_calendar(api):
                 i += 1
             print("\n")
 
+            # Prints out detailed information about a specific event chosen
             if events:
                 idx = int(input("Please input the number associated with the specific event to view detailed "
                                 "information or please input 0 to exit: "))
@@ -246,12 +273,17 @@ def search_event(api, keyword):
     (Written for functionality 4)
     Searches through the user's calendar for events that contain the specified
     keyword and returns them.
+
+    :param api: API of the Google Calendar
+    :param keyword: The keyword of the event that we want to search for
     """
     events_result = api.events().list(calendarId='primary',
                                       singleEvents=True,
                                       orderBy='startTime').execute()
     search_res = []
     for event in events_result.get('items', []):
+        # If the event's summary contains the keyword that we are looking for,
+        # append it to the output list
         if keyword in event['summary']:
             search_res.append(event)
     return search_res
@@ -261,6 +293,9 @@ def delete_event_by_name(api, event_name):
     """
     (Written for functionality 5)
     Deletes events in the user's calendar based on the given name.
+
+    :param api: API of the Google Calendar
+    :param event_name: Name of the event that is to be deleted
     """
     found = False
     res = search_event(api, event_name)
@@ -277,8 +312,16 @@ def delete_event_reminder(api, event_name, index, minute=0):
     (Written for functionality 5)
     Deletes a specific event's reminder based on the time set for the reminder
     (In minutes format)
+
+    :param api: API of the Google Calendar
+    :param event_name: Name of the event that is to be deleted
+    :param index: Since it is possible to have more than 1 event with the same name,
+    index specifies the specific event that we are operating on
+    :param minute: The minutes for the reminder that we want to delete
     """
+    # Searches for events with the specified name
     res = search_event(api, event_name)
+    # Uses the index provided to obtain the specific event that we are operating on
     try:
         event = (list(res)[index])
     except IndexError:
@@ -286,12 +329,18 @@ def delete_event_reminder(api, event_name, index, minute=0):
 
     new_reminder = []
 
+    # If the value of minute is not 0, this means we are deleting a specific reminder
     if minute != 0:
+        # If the event uses a user-added reminder (not default)
         if event['reminders'].get('overrides') is not None:
+            # Append all reminders to a new list except for the one specified in the parameter
             for reminder in event['reminders'].get('overrides'):
                 if reminder['minutes'] != minute:
                     new_reminder.append(reminder)
 
+            # If the length of the new list is the same as the old reminder list, this means
+            # that we could not find the reminder that the user wants to delete (because it does not
+            # exist)
             if len(new_reminder) == len(event['reminders'].get('overrides')):
                 raise ProcessLookupError("Invalid reminder.")
 
@@ -299,10 +348,12 @@ def delete_event_reminder(api, event_name, index, minute=0):
                 'useDefault': False,
                 'overrides': new_reminder
             }
+        # If the event uses the default reminder and the user wants to get rid of it
         elif event['reminders'].get('useDefault') is True and minute == 10:
             event['reminders'] = {
                 'useDefault': False
             }
+    # If the value of minute is 0, we delete all reminders
     else:
         event['reminders'] = {
             'useDefault': False
