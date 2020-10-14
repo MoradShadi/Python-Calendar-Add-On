@@ -436,7 +436,7 @@ class CalendarTest(unittest.TestCase):
         self.assertEqual(Calendar.search_event(mock_api, 'john'), event)
         #tests that the event can be found with a similar name but not the exact name
         self.assertEqual(Calendar.search_event(mock_api, 'johnny'), event)
-        
+
         event = []
         # Sets the return value to a sample empty return (No events found)
         mock_search_event.return_value = event
@@ -450,7 +450,6 @@ class CalendarTest(unittest.TestCase):
         self.assertEqual(Calendar.search_event(api, 'vnjfnvjfenvjefnvienbfivbefbvhejbf'), api.events().list(calendarId='primary', q='vnjfnvjfenvjefnvienbfivbefbvhejbf').execute().get('items', []))
         self.assertEqual(Calendar.search_event(api, 'test123'), api.events().list(calendarId='primary', q='test123').execute().get('items', []))
         self.assertEqual(Calendar.search_event(api, '123456789'), api.events().list(calendarId='primary', q='123456789').execute().get('items', []))
-
         # Get the amount of events in the calendar when searching before adding the new test event
         len_before_insert = len(Calendar.search_event(api, '__testing__'))
 
@@ -461,6 +460,13 @@ class CalendarTest(unittest.TestCase):
 
         # Ensures that the inserted event can be obtained using the search function
         self.assertEqual(len(Calendar.search_event(api, '__testing__')), len_before_insert+1)
+        # test to ensure event can be found with name variations but not exact name
+        self.assertEqual(len(Calendar.search_event(api, 'testing')), len_before_insert+1)
+        self.assertEqual(len(Calendar.search_event(api, 'test')), len_before_insert+1)
+        self.assertEqual(len(Calendar.search_event(api, '__test')), len_before_insert+1)
+        self.assertEqual(len(Calendar.search_event(api, 'tes')), len_before_insert+1)
+        self.assertEqual(len(Calendar.search_event(api, 'sting')), len_before_insert+1)
+        self.assertEqual(len(Calendar.search_event(api, '__')), len_before_insert+1)
         # Deletes the created event
         Calendar.delete_event_by_name(api, '__testing__')
 
