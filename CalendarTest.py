@@ -65,15 +65,6 @@ class CalendarTest(unittest.TestCase):
             # Tests that we are accurately querying for events from at least 5 years ago (as specified)
             self.assertEqual(int(kwargs['timeMax'][:4]) - int(kwargs['timeMin'][:4]), num_years)
 
-        # Tests if an exception is raised when the number of events entered is 4 or less
-        mock_api = Mock()
-        with self.assertRaises(ValueError):
-            Calendar.get_year_past_events(mock_api, start_time, 4)
-
-        mock_api = Mock()
-        with self.assertRaises(ValueError):
-            Calendar.get_year_past_events(mock_api, start_time, -1)
-
     def test_get_past_year_events(self):
         for iteration in range(3, 7):
             start_time = datetime.datetime.utcnow().isoformat() + 'Z'
