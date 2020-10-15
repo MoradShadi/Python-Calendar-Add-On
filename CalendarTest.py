@@ -428,8 +428,11 @@ class CalendarTest(unittest.TestCase):
         # Assigns the event to be returned when api.events.list.execute.get() is called
         mock_calendar_api.events.return_value.list.return_value.execute.return_value.get.return_value = event_item
 
-        # Tests that the event is correctly returned when we search using keyword 'john'
+        # Tests that the event is correctly returned when we search using keyword 'john' or any of its substrings
         self.assertEqual(Calendar.search_event(mock_calendar_api, 'john'), event_item)
+        self.assertEqual(Calendar.search_event(mock_calendar_api, 'joh'), event_item)
+        self.assertEqual(Calendar.search_event(mock_calendar_api, 'jo'), event_item)
+        self.assertEqual(Calendar.search_event(mock_calendar_api, 'j'), event_item)
 
         # Tests that the event is not returned if we search using other keywords
         self.assertEqual(Calendar.search_event(mock_calendar_api, 'testing'), [])
