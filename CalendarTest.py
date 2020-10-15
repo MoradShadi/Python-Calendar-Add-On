@@ -435,6 +435,9 @@ class CalendarTest(unittest.TestCase):
         self.assertEqual(Calendar.search_event(mock_calendar_api, 'j'), event_item)
 
         # Tests that the event is not returned if we search using other keywords
+        self.assertEqual(Calendar.search_event(mock_calendar_api, 'johnny'), [])
+        self.assertEqual(Calendar.search_event(mock_calendar_api, '_john_'), [])
+        self.assertEqual(Calendar.search_event(mock_calendar_api, 'jon'), [])
         self.assertEqual(Calendar.search_event(mock_calendar_api, 'testing'), [])
 
     def test_search_event(self):
