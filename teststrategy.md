@@ -16,7 +16,7 @@ For this user story, we created a function `get_year_past_events()` that allows 
  1. Input of less than 5 years
  2. Input of 5 or more years
 
-With that, all scenarios should be tested as any input that is less than 5 should yield the same result and any input that is 5 or more should also produce the same result.
+With that, all scenarios should be tested as any input that is less than 5 should yield the same result and any input that is 5 or more should also produce the same result. This also pretty much covers the **branch coverage** for the if statement in the function. Since the rest of the function is fairly straightforward and short, we simply utilized a **line coverage** for the other lines of code to ensure everything is working as expected.
 
 ##
 #### User story 2
@@ -27,7 +27,7 @@ This user story is similar to the first one, with the only difference being that
  1. Input of less than 2 years
  2. Input of 2 or more years
 
-With that, all scenarios should be tested as any input that is less than 2 should yield the same result and any input that is 2 or more should also produce the same result.
+With that, all scenarios should be tested as any input that is less than 2 should yield the same result and any input that is 2 or more should also produce the same result. Like user story 1, this also pretty much covers the **branch coverage** for the if statement in the function. Since the rest of the function is fairly straightforward and short, we simply utilized a **line coverage** for the other lines of code to ensure everything is working as expected.
 
 ##
 #### User story 3
@@ -41,7 +41,7 @@ For this user story, we made 2 separate functions, `get_specific_time_events()` 
 
 The value for year, month, and day is chosen arbitrarily as it does not matter as long as testing is done appropriately. Other than that, we also have to take into consideration erroneous inputs that might get passed into the function, for example, entering a value of year, month, and day that is less than 0, entering a month value larger than 12, entering a day value of larger than 31, and so on. For those cases, since there is no fairly straightforward way of doing the tests, we simply used **random testing** to pick out a few cases that might cause an error to be raised, and tested them.
 
-On the other hand, for the menu, since it utilizes the `get_specific_time_events()` function, which has already been tested, we only tested the menu by providing it with random values, again, using **random testing**, to see if everything prints out as expected. Since there are various scenarios and inputs to consider for the menu, we simply used a basic **statement coverage** to ensure that each statement in the function (which includes the error handling) is covered by a part of the test code.
+On the other hand, for the menu, since it utilizes the `get_specific_time_events()` function, which has already been tested, we only tested the menu by providing it with random values, again, using **random testing**, to see if everything prints out as expected. Since there are various scenarios and inputs to consider for the menu, we simply used a basic **branch coverage** to ensure that each branch in the function (which includes the error handling) is covered by a part of the test code.
 
 ##
 #### User story 4
@@ -71,7 +71,7 @@ On the other hand, for deleting reminders, we have a function called `delete_eve
 ### Other test strategies conducted
 
 #### Mocking
-Other than testing out the actual Google Calendar API, mocking is also performed as the API is a web service and may be too slow to test out for some instances. Mocking is also conducted to simulate exceptions that may be hard to trigger in the actual system.
+Other than testing out the actual Google Calendar API, mocking is also performed as the API is a web service and may be too slow to test out for some instances. Mocking is also conducted to simulate exceptions that may be hard to trigger in the actual system. In our test code, we tried our best to incorporate as many appropriate mock test code as possible by patching calls to the google API with a mock version of it and setting the return value manually. With that, we can test out whether the return value of the actual function is as expected.
 
 #### Coverage testing
 To find out the coverage of our testing file, we utilized the coverage.py tool to measure and see which lines of code in the Calendar Application we covered, and which lines we did not. After running the coverage tool initially, we realized that our coverage of the code was only at around 60%, which means that our test file is missing a lot of the code. With that information, we added more tests to cover the lines of code that we did not tested previously before running the coverage file again, as we ideally want the coverage of our test file to be as close to 100% as possible. Ultimately, since some of the code such as the `get_calendar_api()` function and the `main()` function do not need to be tested, we resorted to just testing everything that we can and end up with with a coverage of around 80+% for our test code.
