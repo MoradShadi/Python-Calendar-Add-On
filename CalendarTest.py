@@ -428,11 +428,17 @@ class CalendarTest(unittest.TestCase):
         # Assigns the event to be returned when api.events.list.execute.get() is called
         mock_calendar_api.events.return_value.list.return_value.execute.return_value.get.return_value = event_item
 
-        # Tests that the event is correctly returned when we search using keyword 'john' or any of its substrings
+        # Tests that the event is correctly returned when we search using keyword 'john' or any of its substrings, tests letters in capital
         self.assertEqual(Calendar.search_event(mock_calendar_api, 'john'), event_item)
+        self.assertEqual(Calendar.search_event(mock_calendar_api, 'JOHN'), event_item)
+        self.assertEqual(Calendar.search_event(mock_calendar_api, 'JoHn'), event_item)
         self.assertEqual(Calendar.search_event(mock_calendar_api, 'joh'), event_item)
+        self.assertEqual(Calendar.search_event(mock_calendar_api, 'JOH'), event_item)
         self.assertEqual(Calendar.search_event(mock_calendar_api, 'jo'), event_item)
+        self.assertEqual(Calendar.search_event(mock_calendar_api, 'Jo'), event_item)
         self.assertEqual(Calendar.search_event(mock_calendar_api, 'j'), event_item)
+        self.assertEqual(Calendar.search_event(mock_calendar_api, 'J'), event_item)
+        
 
         # Tests that the event is not returned if we search using other keywords
         self.assertEqual(Calendar.search_event(mock_calendar_api, 'johnny'), [])
@@ -460,8 +466,11 @@ class CalendarTest(unittest.TestCase):
         self.assertEqual(len(Calendar.search_event(api, '__testing__')), len_before_insert+1)
         # test to ensure event can be found with name variations but not exact name
         self.assertEqual(len(Calendar.search_event(api, 'testing')), len_before_insert+1)
+        self.assertEqual(len(Calendar.search_event(api, 'TESTING')), len_before_insert+1)
         self.assertEqual(len(Calendar.search_event(api, 'test')), len_before_insert+1)
+        self.assertEqual(len(Calendar.search_event(api, 'TEST')), len_before_insert+1)
         self.assertEqual(len(Calendar.search_event(api, '__test')), len_before_insert+1)
+        self.assertEqual(len(Calendar.search_event(api, '__Tes')), len_before_insert+1)
         self.assertEqual(len(Calendar.search_event(api, 'tes')), len_before_insert+1)
         self.assertEqual(len(Calendar.search_event(api, 'sting')), len_before_insert+1)
         self.assertEqual(len(Calendar.search_event(api, '__')), len_before_insert+1)
