@@ -421,26 +421,18 @@ class CalendarTest(unittest.TestCase):
         Calendar.delete_event_by_name(api, '__testing__')
 
     # Patches the calendar search event function to mock_search_event
-    @patch('Calendar.search_event')
-    def test_search_event_mock(self, mock_search_event):
-        mock_api = Mock()
+    @patch('googleapiclient.discovery.Resource')
+    def test_search_event_mock(self, mock_calendar_api):
+        # Sample event with the summary 'john'
+        event_item = [{'kind': 'calendar#event', 'etag': '"3203969478692000"', 'id': '0m1rmn75frd3jpn2cd6ha3015p', 'status': 'confirmed', 'htmlLink': 'https://www.google.com/calendar/event?eid=MG0xcm1uNzVmcmQzanBuMmNkNmhhMzAxNXAgbWFibzAwMDNAc3R1ZGVudC5tb25hc2guZWR1', 'created': '2020-10-06T11:45:22.000Z', 'updated': '2020-10-06T11:45:22.831Z', 'summary': 'john', 'creator': {'email': 'mabo0003@student.monash.edu', 'self': True}, 'organizer': {'email': 'mabo0003@student.monash.edu', 'self': True}, 'start': {'dateTime': '2020-10-08T10:00:00+08:00'}, 'end': {'dateTime': '2020-10-08T10:30:00+08:00'}, 'iCalUID': '0m1rmn75frd3jpn2cd6ha3015p@google.com', 'sequence': 0, 'reminders': {'useDefault': False, 'overrides': [{'method': 'popup', 'minutes': 10}, {'method': 'email', 'minutes': 50}]}}]
+        # Assigns the event to be returned when api.events.list.execute.get() is called
+        mock_calendar_api.events.return_value.list.return_value.execute.return_value.get.return_value = event_item
 
-        event = [{'kind': 'calendar#event', 'etag': '"3205310083330000"', 'id': '2rf8r17o1jmier8f0eahofj2uo', 'status': 'confirmed', 'htmlLink': 'https://www.google.com/calendar/event?eid=MnJmOHIxN28xam1pZXI4ZjBlYWhvZmoydW8gd3RlbzAwMTFAc3R1ZGVudC5tb25hc2guZWR1', 'created': '2020-10-14T05:57:21.000Z', 'updated': '2020-10-14T05:57:21.665Z', 'summary': 'testing', 'creator': {'email': 'wteo0011@student.monash.edu', 'self': True}, 'organizer': {'email': 'wteo0011@student.monash.edu', 'self': True}, 'start': {'dateTime': '2020-10-14T15:30:00+08:00'}, 'end': {'dateTime': '2020-10-14T16:30:00+08:00'}, 'iCalUID': '2rf8r17o1jmier8f0eahofj2uo@google.com', 'sequence': 0, 'reminders': {'useDefault': True}}]
-        # Sets the return value to a sample return (Found an event)
-        mock_search_event.return_value = event
-        self.assertEqual(Calendar.search_event(mock_api, 'testing'), event)
+        # Tests that the event is correctly returned when we search using keyword 'john'
+        self.assertEqual(Calendar.search_event(mock_calendar_api, 'john'), event_item)
 
-        event = [{'kind': 'calendar#event', 'etag': '"3203969478692000"', 'id': '0m1rmn75frd3jpn2cd6ha3015p', 'status': 'confirmed', 'htmlLink': 'https://www.google.com/calendar/event?eid=MG0xcm1uNzVmcmQzanBuMmNkNmhhMzAxNXAgbWFibzAwMDNAc3R1ZGVudC5tb25hc2guZWR1', 'created': '2020-10-06T11:45:22.000Z', 'updated': '2020-10-06T11:45:22.831Z', 'summary': 'john', 'creator': {'email': 'mabo0003@student.monash.edu', 'self': True}, 'organizer': {'email': 'mabo0003@student.monash.edu', 'self': True}, 'start': {'dateTime': '2020-10-08T10:00:00+08:00'}, 'end': {'dateTime': '2020-10-08T10:30:00+08:00'}, 'iCalUID': '0m1rmn75frd3jpn2cd6ha3015p@google.com', 'sequence': 0, 'reminders': {'useDefault': False, 'overrides': [{'method': 'popup', 'minutes': 10}, {'method': 'email', 'minutes': 50}]}}]
-        # Sets the return value to a sample return (Found an event)
-        mock_search_event.return_value = event
-        self.assertEqual(Calendar.search_event(mock_api, 'john'), event)
-        # Tests that the event can be found with a similar name but not the exact name
-        self.assertEqual(Calendar.search_event(mock_api, 'johnny'), event)
-
-        event = []
-        # Sets the return value to a sample empty return (No events found)
-        mock_search_event.return_value = event
-        self.assertEqual(Calendar.search_event(mock_api, 'invalid'), event)
+        # Tests that the event is not returned if we search using other keywords
+        self.assertEqual(Calendar.search_event(mock_calendar_api, 'testing'), [])
 
     def test_search_event(self):
         api = Calendar.get_calendar_api()
