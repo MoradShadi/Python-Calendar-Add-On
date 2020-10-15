@@ -42,7 +42,7 @@ class CalendarTest(unittest.TestCase):
     # Add more test cases here
     def test_get_past_years_events_mock(self):
         
-        for i in range(4,7):
+        for i in range(4, 7):
             start_time = datetime.datetime.utcnow().isoformat() + 'Z'
             num_years = i
 
@@ -90,7 +90,7 @@ class CalendarTest(unittest.TestCase):
 
     def test_get_future_years_events_mock(self):
 
-        for i in range(1,4):
+        for i in range(1, 4):
             start_time = datetime.datetime.utcnow().isoformat() + 'Z'
             num_years = i
 
@@ -434,7 +434,7 @@ class CalendarTest(unittest.TestCase):
         # Sets the return value to a sample return (Found an event)
         mock_search_event.return_value = event
         self.assertEqual(Calendar.search_event(mock_api, 'john'), event)
-        #tests that the event can be found with a similar name but not the exact name
+        # Tests that the event can be found with a similar name but not the exact name
         self.assertEqual(Calendar.search_event(mock_api, 'johnny'), event)
 
         event = []
@@ -469,6 +469,23 @@ class CalendarTest(unittest.TestCase):
         self.assertEqual(len(Calendar.search_event(api, '__')), len_before_insert+1)
         # Deletes the created event
         Calendar.delete_event_by_name(api, '__testing__')
+
+    @patch('Calendar.search_event')
+    def test_delete_event_by_name_mock(self, mock_delete_event_by_name_search):
+        # When deleting events, the function search_event is called to look for the event
+        # to be deleted, we mock the return of the search_event to be a sample return
+        mock_delete_event_by_name_search.return_value = [{'kind': 'calendar#event', 'etag': '"3205310083330000"', 'id': '2rf8r17o1jmier8f0eahofj2uo', 'status': 'confirmed', 'htmlLink': 'https://www.google.com/calendar/event?eid=MnJmOHIxN28xam1pZXI4ZjBlYWhvZmoydW8gd3RlbzAwMTFAc3R1ZGVudC5tb25hc2guZWR1', 'created': '2020-10-14T05:57:21.000Z', 'updated': '2020-10-14T05:57:21.665Z', 'summary': 'testing', 'creator': {'email': 'wteo0011@student.monash.edu', 'self': True}, 'organizer': {'email': 'wteo0011@student.monash.edu', 'self': True}, 'start': {'dateTime': '2020-10-14T15:30:00+08:00'}, 'end': {'dateTime': '2020-10-14T16:30:00+08:00'}, 'iCalUID': '2rf8r17o1jmier8f0eahofj2uo@google.com', 'sequence': 0, 'reminders': {'useDefault': True}}]
+        mock_api = Mock()
+        # Tests that the delete is successful if search returns something
+        self.assertEqual(Calendar.delete_event_by_name(mock_api, 'testing'), True)
+
+        # When deleting events, the function search_event is called to look for the event
+        # to be deleted, we mock the return of the search_event to be empty
+        mock_delete_event_by_name_search.return_value = []
+        mock_api = Mock()
+        # Tests that an error is raised if search does not return anything
+        with self.assertRaises(ProcessLookupError):
+            Calendar.delete_event_by_name(mock_api, 'testing')
 
     def test_delete_event_by_name(self):
         api = Calendar.get_calendar_api()
