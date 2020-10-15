@@ -277,6 +277,7 @@ def search_event(api, keyword):
     :param api: API of the Google Calendar
     :param keyword: The keyword of the event that we want to search for
     """
+    keyword = keyword.lower()
     events_result = api.events().list(calendarId='primary',
                                       singleEvents=True,
                                       orderBy='startTime').execute()
@@ -373,10 +374,9 @@ def main():
     # events = get_year_past_events(api, time_now, 5)
     # events = get_year_future_events(api, time_now, 2)
     # events = get_specific_time_events(api, 2020, 8, 17)
-    # events = search_event(api, 'Sanity')
-    delete_event_reminder(api, 'testing', 0, 22)
+    events = search_event(api, 'john')
+    # delete_event_reminder(api, 'testing', 0, 22)
     # delete_event(api,'test1')
-
     if not events:
         print('No events found.')
     for event in events:
